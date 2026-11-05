@@ -1,0 +1,16 @@
+{
+  "name": "Fan Guys Tools",
+  "short_name": "FG Tools",
+  "description": "Site survey, estimate, layout, materials and Tech Pro in one app",
+  "id": "/Fan-Guys-Tools/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1B1C1E",
+  "theme_color": "#1B1C1E",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
