@@ -66,23 +66,26 @@
   function homeButton() {
     var css = document.createElement('style');
     css.textContent =
-      '#fgt-home{position:fixed;z-index:2147483000;width:44px;height:44px;border-radius:13px;opacity:.9;border:2px solid #F28C0F;' +
-      'background:#1B1C1E url(../shared/mark.png) center/36px no-repeat;box-shadow:0 4px 14px rgba(0,0,0,.45);' +
-      'touch-action:none;-webkit-tap-highlight-color:transparent;padding:0;cursor:pointer}' +
-      '#fgt-home:active{transform:scale(.94)}' +
+      '#fgt-home{position:fixed;z-index:2147483000;display:flex;align-items:center;gap:6px;height:44px;padding:0 14px 0 6px;' +
+      'border-radius:22px;border:0;background:#F28C0F;color:#1B1C1E;font:800 16px/1 "Barlow Condensed",Barlow,system-ui,sans-serif;' +
+      'box-shadow:0 4px 14px rgba(0,0,0,.45),0 0 0 2px #1B1C1E;touch-action:none;-webkit-tap-highlight-color:transparent;cursor:pointer;-webkit-user-select:none;user-select:none}' +
+      '#fgt-home img{width:32px;height:32px;border-radius:9px;pointer-events:none}' +
+      '#fgt-home:active{transform:scale(.95)}' +
       '#fgt-ratebar{position:sticky;top:0;z-index:2147482999;background:#F28C0F;color:#1B1C1E;font:600 14px/1.35 Barlow,system-ui,sans-serif;' +
       'padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top))}#fgt-ratebar a{color:#1B1C1E;font-weight:800}';
     document.head.appendChild(css);
     var b = document.createElement('button');
     b.id = 'fgt-home'; b.type = 'button'; b.setAttribute('aria-label', 'Back to Fan Guys Tools home');
-    var pos = get('fgt-home-pos-' + TOOL, null);
+    b.innerHTML = '<img src="../shared/mark.png" alt="">\u2039 Tools';
+    var pos = get('fgt-home-pos2-' + TOOL, null);
     function place(x, y) {
       var w = window.innerWidth, h = window.innerHeight;
-      x = Math.max(6, Math.min(w - 52, x)); y = Math.max(6, Math.min(h - 52, y));
+      var bw = b.offsetWidth || 100; x = Math.max(6, Math.min(w - bw - 6, x)); y = Math.max(6, Math.min(h - 50, y));
       b.style.left = x + 'px'; b.style.top = y + 'px';
       return { x: x, y: y };
     }
-    var start = pos || { x: 10, y: window.innerHeight - 120 };
+    document.body.appendChild(b);
+    var start = pos || { x: 10, y: window.innerHeight - 150 };
     var at = place(start.x, start.y);
     var drag = null, moved = false;
     b.addEventListener('pointerdown', function (e) { drag = { dx: e.clientX - at.x, dy: e.clientY - at.y, sx: e.clientX, sy: e.clientY }; moved = false; b.setPointerCapture(e.pointerId); });
@@ -91,13 +94,14 @@
       if (Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) > 8) moved = true;
       if (moved) at = place(e.clientX - drag.dx, e.clientY - drag.dy);
     });
-    b.addEventListener('pointerup', function () {
-      if (moved) set('fgt-home-pos-' + TOOL, at);
-      else location.href = '../';
-      drag = null;
+    b.addEventListener('pointerup', function () { if (moved) set('fgt-home-pos2-' + TOOL, at); drag = null; });
+    b.addEventListener('pointercancel', function () { drag = null; });
+    b.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (moved) { moved = false; return; }
+      location.assign(new URL('../', location.href).href);
     });
     window.addEventListener('resize', function () { at = place(at.x, at.y); });
-    document.body.appendChild(b);
 
     if (TOOL === 'estimate' && !rates()) {
       var bar = document.createElement('div');

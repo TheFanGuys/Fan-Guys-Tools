@@ -34,6 +34,8 @@ a{color:inherit}
 .cond{font-family:"Barlow Condensed",Barlow,sans-serif}
 
 /* header */
+.backlink{display:inline-flex;align-items:center;min-height:40px;margin:-6px 0 6px;padding:0 4px;color:var(--orange);font-weight:700;text-decoration:none}
+.backlink[hidden]{display:none}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
 .top img{width:44px;height:44px;border-radius:11px;box-shadow:0 0 0 1px var(--line)}
 .brand{flex:1;line-height:1}
@@ -129,6 +131,7 @@ table.rates{width:100%;border-collapse:collapse;font-size:14px}
 </head>
 <body>
 
+<a class="backlink" id="toLauncher" href="https://thefanguys.github.io/" hidden>‹ All Fan Guys apps</a>
 <header class="top">
   <img src="icon-192.png" alt="">
   <div class="brand"><b>FAN <span>GUYS</span> TOOLS</b><small>Survey to materials, one job at a time</small></div>
@@ -365,6 +368,7 @@ table.rates{width:100%;border-collapse:collapse;font-size:14px}
     rd.readAsText(f);this.value='';
   };
 
+  try{if(/from=launcher/.test(location.search))sessionStorage.setItem('fgt-from-launcher','1');if(sessionStorage.getItem('fgt-from-launcher'))$('toLauncher').hidden=false}catch(e){}
   render();
   if(location.hash==='#rates'){renderRates();show('setSheet');setTimeout(function(){$('rates').scrollIntoView()},300)}
 })();
