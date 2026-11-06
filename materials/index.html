@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="../icon-192.png">
+<script src="../shared/store.js"></script>
+<script src="../shared/jspdf.js"></script>
+<script src="../shared/pdf-delivery.js"></script>
 <script src="../shared/fgt.js" data-tool="materials"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, " />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <title>Field List ⚡</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <title>Fan Guys Materials</title>
+  
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #f3f4f6; font-family: 'Outfit', 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; }
@@ -18,17 +22,19 @@
     .cat-img { width: 42px; height: 42px; object-fit: cover; border-radius: 10px; display: block; }
     .cat-img-wrap { width: 42px; height: 42px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
   </style>
+<link rel="stylesheet" href="../shared/workspace.css">
+<script src="../shared/workspace.js" defer></script>
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="../shared/vendor/react.min.js"></script>
+  <script src="../shared/vendor/react-dom.min.js"></script>
+  <script src="../shared/vendor/babel.min.js"></script>
 
   <script type="text/babel">
     const { useState, useCallback, useEffect } = React;
     const SAVE_KEY = 'fg_materials_autosave_v1';
-    const loadSaved = () => { try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || {}; } catch(e) { return {}; } };
+    const loadSaved = () => { try { return JSON.parse(FGTStore.getItem(SAVE_KEY)) || {}; } catch(e) { return {}; } };
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // MATERIALS DATA — Easy to edit!
@@ -224,15 +230,15 @@
       "Caddy Hardware":        <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="5" y="5" width="30" height="6" rx="3" fill="#64748b"/><path d="M11 11 L11 28 Q11 34 20 34 Q29 34 29 28 L29 11" stroke="#64748b" strokeWidth="3.5" fill="none"/><line x1="11" y1="22" x2="29" y2="22" stroke="#94a3b8" strokeWidth="2" strokeDasharray="3 2"/></svg>,
       "Boxes & Covers":        <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="4" y="5" width="32" height="30" rx="3" fill="#64748b"/><rect x="6" y="7" width="28" height="26" rx="2" fill="#94a3b8"/><circle cx="4" cy="20" r="3" fill="#475569"/><circle cx="36" cy="20" r="3" fill="#475569"/><rect x="12" y="14" width="16" height="12" rx="1.5" fill="#f1f5f9" opacity="0.3"/></svg>,
       "Flex & Fittings":       <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><path d="M2 20 C6 13,10 27,14 20 C18 13,22 27,26 20 C30 13,34 27,38 20" stroke="#64748b" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>,
-      "Strut & Strut Hardware":     <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="2" y="10" width="36" height="20" rx="2" fill="#64748b"/><rect x="4" y="12" width="32" height="16" rx="1.5" fill="#f3f4f6"/><rect x="4" y="12" width="32" height="4" rx="1" fill="#cbd5e1"/><rect x="4" y="24" width="32" height="4" rx="1" fill="#cbd5e1"/><circle cx="30" cy="32" r="6" fill="#475569"/><circle cx="30" cy="32" r="3.5" fill="#94a3b8"/></svg>,
+      "Strut & Strut Hardware":     <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="2" y="10" width="36" height="20" rx="2" fill="#64748b"/><rect x="4" y="12" width="32" height="16" rx="1.5" fill="var(--ws-bg)"/><rect x="4" y="12" width="32" height="4" rx="1" fill="#cbd5e1"/><rect x="4" y="24" width="32" height="4" rx="1" fill="#cbd5e1"/><circle cx="30" cy="32" r="6" fill="#475569"/><circle cx="30" cy="32" r="3.5" fill="#94a3b8"/></svg>,
       "Bolts, Nuts & Washers":    <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="15" y="2" width="10" height="6" rx="2" fill="#64748b"/><line x1="12" y1="5" x2="28" y2="5" stroke="#94a3b8" strokeWidth="1.5"/><rect x="18" y="8" width="4" height="24" rx="1.5" fill="#94a3b8"/><path d="M18 10 L15 11.5 M18 14 L15 15.5 M18 18 L15 19.5 M18 22 L15 23.5" stroke="#64748b" strokeWidth="1" strokeLinecap="round"/><path d="M14 32 L26 32 L24 38 L16 38 Z" fill="#64748b"/></svg>,
       "Fasteners & Anchors":       <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="17" y="2" width="6" height="5" rx="1.5" fill="#64748b"/><line x1="15" y1="4.5" x2="25" y2="4.5" stroke="#94a3b8" strokeWidth="1.5"/><rect x="18.5" y="7" width="3" height="22" rx="1" fill="#94a3b8"/><path d="M18.5 9 L16 10 M18.5 12 L16 13 M18.5 15 L16 16 M18.5 18 L16 19 M18.5 21 L16 22" stroke="#64748b" strokeWidth="1" strokeLinecap="round"/><rect x="5" y="30" width="30" height="6" rx="2" fill="#64748b" opacity="0.4"/></svg>,
       "#12 THHN Wire":         <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="17" fill="#64748b"/><circle cx="20" cy="20" r="11" fill="#475569"/><circle cx="20" cy="20" r="5" fill="#334155"/><path d="M20 3 A17 17 0 0 1 37 20" stroke="#f59e0b" strokeWidth="3" fill="none" strokeLinecap="round"/><path d="M37 20 A17 17 0 0 1 20 37" stroke="#f59e0b" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.6"/></svg>,
       "#10 THHN Wire":         <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="17" fill="#64748b"/><circle cx="20" cy="20" r="11" fill="#475569"/><circle cx="20" cy="20" r="5" fill="#334155"/><path d="M20 3 A17 17 0 0 1 37 20" stroke="#f59e0b" strokeWidth="3" fill="none" strokeLinecap="round"/><path d="M37 20 A17 17 0 0 1 20 37" stroke="#f59e0b" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.6"/></svg>,
-      "SOOW Cord":             <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="17" fill="#64748b"/><circle cx="20" cy="20" r="11" fill="#475569"/><circle cx="20" cy="20" r="5" fill="#334155"/><path d="M20 3 A17 17 0 0 1 37 20" stroke="#e5e7eb" strokeWidth="3" fill="none" strokeLinecap="round"/><path d="M37 20 A17 17 0 0 1 20 37" stroke="#e5e7eb" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.7"/><path d="M20 37 A17 17 0 0 1 3 20" stroke="#e5e7eb" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.4"/></svg>,
+      "SOOW Cord":             <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="17" fill="#64748b"/><circle cx="20" cy="20" r="11" fill="#475569"/><circle cx="20" cy="20" r="5" fill="#334155"/><path d="M20 3 A17 17 0 0 1 37 20" stroke="var(--ws-line)" strokeWidth="3" fill="none" strokeLinecap="round"/><path d="M37 20 A17 17 0 0 1 20 37" stroke="var(--ws-line)" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.7"/><path d="M20 37 A17 17 0 0 1 3 20" stroke="var(--ws-line)" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.4"/></svg>,
       "Data / Low Voltage":    <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><rect x="13" y="5" width="18" height="16" rx="2.5" fill="#64748b"/><rect x="16" y="19" width="12" height="7" rx="1.5" fill="#475569"/><line x1="17" y1="8" x2="17" y2="19" stroke="#94a3b8" strokeWidth="1.8"/><line x1="21" y1="8" x2="21" y2="19" stroke="#94a3b8" strokeWidth="1.8"/><line x1="25" y1="8" x2="25" y2="19" stroke="#94a3b8" strokeWidth="1.8"/><path d="M2 34 C6 28,10 38,14 34" stroke="#3b82f6" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>,
       "Wire Nuts":             <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><path d="M13 36 L20 8 L27 36 Z" fill="#64748b"/><path d="M13 36 Q20 39 27 36 L27 32 Q20 35 13 32 Z" fill="#475569"/><path d="M14 28 Q20 32 26 28" stroke="#94a3b8" strokeWidth="1.8" fill="none"/><path d="M15 21 Q20 25 25 21" stroke="#94a3b8" strokeWidth="1.8" fill="none"/></svg>,
-      "Terminals & Tape":      <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="17" fill="#64748b"/><circle cx="20" cy="20" r="9" fill="#f3f4f6"/><circle cx="20" cy="20" r="5" fill="#d1d5db"/></svg>,
+      "Terminals & Tape":      <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="17" fill="#64748b"/><circle cx="20" cy="20" r="9" fill="var(--ws-bg)"/><circle cx="20" cy="20" r="5" fill="var(--ws-line)"/></svg>,
     };
 
     const SWATCHES = {
@@ -276,6 +282,7 @@
     }
 
     // ── Export: print HTML (only filled items, back button, print button) ─────
+    function htmlText(s) { return String(s == null ? "" : s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
     function buildPrintHtml(jobName, jobLocation, quantities, customs) {
       const date = new Date().toLocaleDateString("en-US", {year:"numeric",month:"long",day:"numeric"});
       let rows = "";
@@ -291,7 +298,7 @@
       const filledCustoms = customs.filter(c => c.name.trim() && c.qty > 0);
       if (filledCustoms.length) {
         rows += `<tr class="cat"><td colspan="2">Custom Items</td></tr>`;
-        filledCustoms.forEach(c => { rows += `<tr><td>${c.name}</td><td class="qty">${c.qty}</td></tr>`; });
+        filledCustoms.forEach(c => { rows += `<tr><td>${htmlText(c.name)}</td><td class="qty">${c.qty}</td></tr>`; });
       }
       return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Material List — ${jobName||"Job"}</title>
 <style>
@@ -318,8 +325,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
 <header>
   <h1>⚡ Material List</h1>
   <div class="meta">
-    <div><strong>Job:</strong>${jobName||"—"}</div>
-    <div><strong>Location:</strong>${jobLocation||"—"}</div>
+    <div><strong>Job:</strong>${htmlText(jobName||"—")}</div>
+    <div><strong>Location:</strong>${htmlText(jobLocation||"—")}</div>
     <div><strong>Date:</strong>${date}</div>
   </div>
 </header>
@@ -328,7 +335,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
   <span>Field List — Electrical Material Tracker</span>
   <span>Printed ${new Date().toLocaleTimeString()}</span>
 </footer>
-</body></html>`;
+<\/body></html>`;
     }
 
     // ── Stepper ───────────────────────────────────────────────────────────────
@@ -338,7 +345,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
         <div style={{display:"flex",alignItems:"center",flexShrink:0}}>
           <button onClick={()=>onChange(Math.max(0,(value||0)-1))} style={{
             width:38,height:42,border:"1.5px solid #e5e7eb",borderRight:"none",
-            borderRadius:"8px 0 0 8px",background:"#f9fafb",color:"#374151",
+            borderRadius:"8px 0 0 8px",background:"var(--ws-raised)",color:"var(--ws-text)",
             fontSize:20,fontWeight:700,cursor:"pointer",display:"flex",
             alignItems:"center",justifyContent:"center",
             opacity:active?1:0.35,fontFamily:"inherit",
@@ -348,16 +355,16 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
             style={{
               width:52,height:42,textAlign:"center",border:"1.5px solid #e5e7eb",
               borderLeft:"none",borderRight:"none",fontSize:15,fontFamily:"inherit",
-              outline:"none",background:"#fff",padding:0,
-              color:active?"#1d4ed8":"#9ca3af",fontWeight:active?700:400,
+              outline:"none",background:"var(--ws-panel)",padding:0,
+              color:active?"#1d4ed8":"var(--ws-muted)",fontWeight:active?700:400,
             }}
           />
           <button onClick={()=>onChange((value||0)+1)} style={{
             width:38,height:42,border:"1.5px solid",
             borderRadius:"0 8px 8px 0",
-            background:active?"#1d4ed8":"#f9fafb",
-            borderColor:active?"#1d4ed8":"#e5e7eb",
-            color:active?"#fff":"#374151",
+            background:active?"var(--ws-accent)":"var(--ws-raised)",
+            borderColor:active?"#1d4ed8":"var(--ws-line)",
+            color:active?"var(--ws-panel)":"#374151",
             fontSize:20,fontWeight:700,cursor:"pointer",display:"flex",
             alignItems:"center",justifyContent:"center",fontFamily:"inherit",
           }}>+</button>
@@ -370,21 +377,21 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       const [open, setOpen] = useState(true);
       const filled = items.map(norm).filter(i=>(quantities[i.name]||0)>0).length;
       return (
-        <div style={{background:"#fff",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
+        <div style={{background:"var(--ws-panel)",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
           <button onClick={()=>setOpen(o=>!o)} style={{
             width:"100%",background:"none",border:"none",padding:"12px 16px",
             display:"flex",alignItems:"center",gap:12,cursor:"pointer",
             borderBottom:open?"1px solid #f3f4f6":"none",
           }}>
             <div className="cat-img-wrap"><CatPhoto src={img} category={category}/></div>
-            <span style={{fontSize:15,fontWeight:700,color:"#111827",flex:1,fontFamily:"'Outfit',sans-serif",textAlign:"left"}}>{category}</span>
+            <span style={{fontSize:15,fontWeight:700,color:"var(--ws-text)",flex:1,fontFamily:"'Field Sans',Arial,sans-serif",textAlign:"left"}}>{category}</span>
             <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
               {filled>0 && (
-                <span style={{fontSize:11,fontWeight:600,color:"#1d4ed8",background:"#eff6ff",borderRadius:10,padding:"2px 8px",border:"1px solid #bfdbfe",fontFamily:"'Outfit',sans-serif"}}>
+                <span style={{fontSize:11,fontWeight:600,color:"#1d4ed8",background:"#eff6ff",borderRadius:10,padding:"2px 8px",border:"1px solid #bfdbfe",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                   {filled} entered
                 </span>
               )}
-              <span style={{fontSize:11,color:"#9ca3af",display:"inline-block",transform:open?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}>▼</span>
+              <span style={{fontSize:11,color:"var(--ws-muted)",display:"inline-block",transform:open?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}>▼</span>
             </div>
           </button>
 
@@ -398,23 +405,23 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
               <div key={item.name} style={{
                 display:"flex",alignItems:"center",justifyContent:"space-between",
                 padding:"10px 16px",gap:12,
-                background:qty>0?"#eff6ff":idx%2===0?"#fff":"#fafafa",
+                background:qty>0?"#eff6ff":idx%2===0?"var(--ws-panel)":"#fafafa",
                 borderBottom:"1px solid #f3f4f6",
               }}>
                 <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                     {swatch && <span style={{width:11,height:11,borderRadius:"50%",background:swatch,flexShrink:0,border:"1.5px solid rgba(0,0,0,0.15)",display:"inline-block"}}/>}
-                    <span style={{fontSize:14,lineHeight:1.35,color:qty>0?"#1e3a5f":"#374151",fontWeight:qty>0?600:400,fontFamily:"'Outfit',sans-serif"}}>
+                    <span style={{fontSize:14,lineHeight:1.35,color:qty>0?"#1e3a5f":"#374151",fontWeight:qty>0?600:400,fontFamily:"'Field Sans',Arial,sans-serif"}}>
                       {item.name}
                     </span>
                     {item.name==="Caddy Box Clip M24S" && qty>0 && (
-                      <span style={{fontSize:10,fontWeight:600,color:"#d97706",background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:6,padding:"1px 6px",fontFamily:"'Outfit',sans-serif"}}>
+                      <span style={{fontSize:10,fontWeight:600,color:"#d97706",background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:6,padding:"1px 6px",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                         → {qty} × 1/4" Nut auto-added
                       </span>
                     )}
                   </div>
                   {hint && (
-                    <span style={{fontSize:10,color:"#9ca3af",paddingLeft:swatch?19:0,fontFamily:"'Outfit',sans-serif"}}>
+                    <span style={{fontSize:10,color:"var(--ws-muted)",paddingLeft:swatch?19:0,fontFamily:"'Field Sans',Arial,sans-serif"}}>
                       {liveLabel ? `→ ${liveLabel}` : hint}
                     </span>
                   )}
@@ -437,27 +444,27 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       const totalItems = filledCats.reduce((s,c)=>s+c.rows.length,0) + filledCustoms.length;
 
       return (
-        <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:540,maxHeight:"90vh",display:"flex",flexDirection:"column",paddingTop:12}}>
-            <div style={{width:36,height:4,background:"#e5e7eb",borderRadius:2,margin:"0 auto 12px"}}/>
+        <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"var(--ws-panel)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:920,maxHeight:"85dvh",display:"flex",flexDirection:"column",paddingTop:12}}>
+            <div style={{width:36,height:4,background:"var(--ws-line)",borderRadius:2,margin:"0 auto 12px"}}/>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px 12px",borderBottom:"1px solid #f3f4f6",flexShrink:0}}>
               <div>
-                <h2 style={{fontSize:20,fontWeight:800,color:"#111827",fontFamily:"'Outfit',sans-serif"}}>Preview</h2>
-                <div style={{fontSize:12,color:"#6b7280",fontFamily:"'Outfit',sans-serif"}}>{totalItems} item{totalItems!==1?"s":""} selected</div>
+                <h2 style={{fontSize:20,fontWeight:800,color:"var(--ws-text)",fontFamily:"'Field Sans',Arial,sans-serif"}}>Preview</h2>
+                <div style={{fontSize:12,color:"var(--ws-muted)",fontFamily:"'Field Sans',Arial,sans-serif"}}>{totalItems} item{totalItems!==1?"s":""} selected</div>
               </div>
-              <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,color:"#9ca3af",cursor:"pointer",padding:4}}>✕</button>
+              <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,color:"var(--ws-muted)",cursor:"pointer",padding:4}}>✕</button>
             </div>
             <div style={{padding:"10px 20px",borderBottom:"1px solid #f3f4f6",flexShrink:0}}>
-              <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"#6b7280",fontFamily:"'Outfit',sans-serif"}}>
-                <span><strong style={{color:"#374151"}}>Job:</strong> {jobName||"—"}</span>
-                <span><strong style={{color:"#374151"}}>Loc:</strong> {jobLocation||"—"}</span>
-                <span><strong style={{color:"#374151"}}>Date:</strong> {new Date().toLocaleDateString()}</span>
+              <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--ws-muted)",fontFamily:"'Field Sans',Arial,sans-serif"}}>
+                <span><strong style={{color:"var(--ws-text)"}}>Job:</strong> {jobName||"—"}</span>
+                <span><strong style={{color:"var(--ws-text)"}}>Loc:</strong> {jobLocation||"—"}</span>
+                <span><strong style={{color:"var(--ws-text)"}}>Date:</strong> {new Date().toLocaleDateString()}</span>
               </div>
             </div>
 
             <div style={{overflowY:"auto",flex:1,padding:"12px 20px"}}>
               {totalItems === 0 && (
-                <div style={{textAlign:"center",padding:"40px 0",color:"#9ca3af",fontFamily:"'Outfit',sans-serif"}}>
+                <div style={{textAlign:"center",padding:"40px 0",color:"var(--ws-muted)",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                   No quantities entered yet.
                 </div>
               )}
@@ -467,7 +474,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                     <div style={{width:20,height:20,borderRadius:5,overflow:"hidden",flexShrink:0,background:"#f1f5f9",display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <CatPhoto src={img} category={category}/>
                     </div>
-                    <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:"#9ca3af",textTransform:"uppercase",fontFamily:"'Outfit',sans-serif"}}>{category}</div>
+                    <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:"var(--ws-muted)",textTransform:"uppercase",fontFamily:"'Field Sans',Arial,sans-serif"}}>{category}</div>
                   </div>
                   {rows.map(item => {
                     const qty = quantities[item.name];
@@ -476,9 +483,9 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                       <div key={item.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid #f3f4f6"}}>
                         <div style={{display:"flex",alignItems:"center",gap:7}}>
                           {swatch && <span style={{width:9,height:9,borderRadius:"50%",background:swatch,flexShrink:0,border:"1.5px solid rgba(0,0,0,0.1)",display:"inline-block"}}/>}
-                          <span style={{fontSize:13,color:"#1e3a5f",fontFamily:"'Outfit',sans-serif"}}>{item.name}</span>
+                          <span style={{fontSize:13,color:"#1e3a5f",fontFamily:"'Field Sans',Arial,sans-serif"}}>{item.name}</span>
                         </div>
-                        <span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",textAlign:"right",fontFamily:"'Outfit',sans-serif",flexShrink:0,paddingLeft:12}}>
+                        <span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",textAlign:"right",fontFamily:"'Field Sans',Arial,sans-serif",flexShrink:0,paddingLeft:12}}>
                           {qtyDisplay(item, qty)}
                         </span>
                       </div>
@@ -488,11 +495,11 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
               ))}
               {filledCustoms.length > 0 && (
                 <div style={{marginBottom:16}}>
-                  <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:"#9ca3af",textTransform:"uppercase",marginBottom:6,fontFamily:"'Outfit',sans-serif"}}>Custom Items</div>
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:"var(--ws-muted)",textTransform:"uppercase",marginBottom:6,fontFamily:"'Field Sans',Arial,sans-serif"}}>Custom Items</div>
                   {filledCustoms.map(c => (
                     <div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid #f3f4f6"}}>
-                      <span style={{fontSize:13,color:"#1e3a5f",fontFamily:"'Outfit',sans-serif"}}>{c.name}</span>
-                      <span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",fontFamily:"'Outfit',sans-serif"}}>{c.qty}</span>
+                      <span style={{fontSize:13,color:"#1e3a5f",fontFamily:"'Field Sans',Arial,sans-serif"}}>{c.name}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",fontFamily:"'Field Sans',Arial,sans-serif"}}>{c.qty}</span>
                     </div>
                   ))}
                 </div>
@@ -500,8 +507,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
             </div>
 
             <div style={{padding:"12px 20px 20px",borderTop:"1px solid #e5e7eb",display:"flex",gap:10,flexShrink:0}}>
-              <button onClick={onClose} style={{flex:1,background:"#f3f4f6",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:600,color:"#6b7280",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Close</button>
-              <button onClick={onExport} style={{flex:2,background:"#1d4ed8",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Export ↑</button>
+              <button onClick={onClose} style={{flex:1,background:"var(--ws-bg)",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:600,color:"var(--ws-muted)",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>Close</button>
+              <button onClick={onExport} style={{flex:2,background:"var(--ws-accent)",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,color:"var(--ws-panel)",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>Export ↑</button>
             </div>
           </div>
         </div>
@@ -509,16 +516,24 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
     }
 
     // ── Export Sheet ──────────────────────────────────────────────────────────
+    function createMaterialPDF(jobName,jobLocation,quantities,customs){
+      const doc=new window.jspdf.jsPDF({unit:'pt',format:'letter'}),clean=window.FGTPDF.clean;
+      doc.setFontSize(20);doc.text('Fan Guys - Materials',36,48);let y=76;doc.setFontSize(11);
+      const lines=buildText(jobName,jobLocation,quantities,customs).split('\n');
+      for(const line of lines){const wrapped=doc.splitTextToSize(clean(line),540);for(const row of wrapped){if(y>744){doc.addPage();y=48;}doc.text(row,36,y);y+=14;}y+=2;}
+      return doc;
+    }
     function ExportSheet({ onClose, jobName, jobLocation, quantities, customs }) {
       const [copied, setCopied] = useState(false);
       const text = buildText(jobName, jobLocation, quantities, customs);
       const filledCount = MATERIALS.reduce((s,{items})=>s+items.map(norm).filter(i=>(quantities[i.name]||0)>0).length,0)
         + customs.filter(c=>c.name.trim()&&c.qty>0).length;
 
-      const copy  = () => navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});
-      const share = () => navigator.share ? navigator.share({title:`Material List — ${jobName||"Job"}`,text}) : copy();
+      const copy=async()=>{try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(text);else{const box=document.createElement('textarea');box.value=text;document.body.appendChild(box);box.select();const ok=document.execCommand('copy');box.remove();if(!ok)throw Error('Clipboard unavailable. Use Share or PDF.');}setCopied(true);setTimeout(()=>setCopied(false),2500);}catch(e){alert(e.message);}};
+      const share=async()=>{if(!navigator.share)return copy();try{await navigator.share({title:'Material List - '+(jobName||'Job'),text});}catch(e){if(e.name!=='AbortError')alert('Sharing failed: '+e.message);}};
       const email = () => { window.location.href=`mailto:?subject=${encodeURIComponent("Material List — "+(jobName||"Job"))}&body=${encodeURIComponent(text)}`; };
       const sms   = () => { window.location.href=`sms:?&body=${encodeURIComponent(text)}`; };
+      const pdf=async()=>{try{await window.FGTPDF.deliver(createMaterialPDF(jobName,jobLocation,quantities,customs),'FanGuys-materials.pdf');}catch(e){alert('PDF failed: '+e.message);}};
       const print = () => { const w=window.open("","_blank"); if(w){w.document.write(buildPrintHtml(jobName,jobLocation,quantities,customs));w.document.close();setTimeout(()=>w.print(),350);} };
 
       const tiles = [
@@ -529,31 +544,31 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       ];
 
       return (
-        <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:540,paddingBottom:24}}>
-            <div style={{width:36,height:4,background:"#e5e7eb",borderRadius:2,margin:"12px auto 16px"}}/>
+        <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"var(--ws-panel)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:920,paddingBottom:24}}>
+            <div style={{width:36,height:4,background:"var(--ws-line)",borderRadius:2,margin:"12px auto 16px"}}/>
             <div style={{padding:"0 20px"}}>
-              <h2 style={{fontSize:20,fontWeight:800,color:"#111827",marginBottom:4,fontFamily:"'Outfit',sans-serif"}}>Export List</h2>
-              <p style={{fontSize:13,color:"#6b7280",marginBottom:18,fontFamily:"'Outfit',sans-serif"}}>
+              <h2 style={{fontSize:20,fontWeight:800,color:"var(--ws-text)",marginBottom:4,fontFamily:"'Field Sans',Arial,sans-serif"}}>Export List</h2>
+              <p style={{fontSize:13,color:"var(--ws-muted)",marginBottom:18,fontFamily:"'Field Sans',Arial,sans-serif"}}>
                 {filledCount} item{filledCount!==1?"s":""} selected · {new Date().toLocaleDateString()}
               </p>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                 {tiles.map(({icon,label,sub,fn})=>(
-                  <button key={label} onClick={fn} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#f9fafb",border:"1.5px solid #e5e7eb",borderRadius:12,padding:"16px 12px",cursor:"pointer",fontFamily:"'Outfit',sans-serif",textAlign:"center"}}>
+                  <button key={label} onClick={fn} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"var(--ws-raised)",border:"1.5px solid #e5e7eb",borderRadius:12,padding:"16px 12px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",textAlign:"center"}}>
                     <span style={{fontSize:24,marginBottom:2}}>{icon}</span>
-                    <span style={{fontSize:14,fontWeight:700,color:"#111827"}}>{label}</span>
-                    <span style={{fontSize:11,color:"#9ca3af"}}>{sub}</span>
+                    <span style={{fontSize:14,fontWeight:700,color:"var(--ws-text)"}}>{label}</span>
+                    <span style={{fontSize:11,color:"var(--ws-muted)"}}>{sub}</span>
                   </button>
                 ))}
               </div>
-              <button onClick={print} style={{width:"100%",display:"flex",alignItems:"center",gap:14,background:"#f9fafb",border:"1.5px solid #e5e7eb",borderRadius:12,padding:"14px 18px",cursor:"pointer",fontFamily:"'Outfit',sans-serif",marginBottom:10,textAlign:"left"}}>
+              <button onClick={pdf} style={{width:"100%",display:"flex",alignItems:"center",gap:14,background:"var(--ws-raised)",border:"1.5px solid #e5e7eb",borderRadius:12,padding:"14px 18px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",marginBottom:10,textAlign:"left"}}>
                 <span style={{fontSize:22}}>🖨</span>
                 <div>
-                  <div style={{fontSize:14,fontWeight:700,color:"#111827"}}>Print / Save PDF</div>
-                  <div style={{fontSize:11,color:"#9ca3af"}}>Clean layout · only selected items · back button included</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"var(--ws-text)"}}>Save / Share PDF</div>
+                  <div style={{fontSize:11,color:"var(--ws-muted)"}}>Downloadable PDF · selected items only</div>
                 </div>
               </button>
-              <button onClick={onClose} style={{width:"100%",background:"#f3f4f6",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:600,color:"#6b7280",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Cancel</button>
+              <button onClick={print} style={{width:"100%",padding:12,background:"none",border:"none",color:"var(--ws-muted)"}}>Print in browser</button><button onClick={onClose} style={{width:"100%",background:"var(--ws-bg)",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:600,color:"var(--ws-muted)",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>Cancel</button>
             </div>
           </div>
         </div>
@@ -561,6 +576,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
     }
 
     // ── Main App ──────────────────────────────────────────────────────────────
+    function nextMaterialQuantities(q,item,val){const next={...q,[item]:Math.max(0,Number(val)||0)};if(item==='Caddy Box Clip M24S'){const old=q['1/4" Nut']||0;if(old===0||old===(q[item]||0))next['1/4" Nut']=next[item];}return next;}
     function App() {
       const [saved] = useState(loadSaved);
       const [jobName, setJobName]           = useState(saved.jobName || "");
@@ -569,7 +585,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       const [customs, setCustoms]           = useState(Array.isArray(saved.customs) && saved.customs.length ? saved.customs : [{id:1,name:"",qty:0}]);
       // Auto-save to this phone so a reload or closed tab never wipes the list
       useEffect(() => {
-        try { localStorage.setItem(SAVE_KEY, JSON.stringify({ jobName, jobLocation, quantities, customs })); } catch(e) {}
+        try { FGTStore.setItem(SAVE_KEY, JSON.stringify({ jobName, jobLocation, quantities, customs })); } catch(e) {}
       }, [jobName, jobLocation, quantities, customs]);
       const [modal, setModal]               = useState(null);
       const [filterFilled, setFilterFilled] = useState(false);
@@ -577,21 +593,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
 
       const BOX_CLIP = 'Caddy Box Clip M24S';
       const CLIP_NUT  = '1/4" Nut';
-      const setQty = useCallback((item, val) => {
-        setQuantities(q => {
-          const next = { ...q, [item]: val };
-          // Auto-match 1/4" Nut to box clip qty, but only if nut hasn't been manually set higher
-          if (item === BOX_CLIP) {
-            const currentNut = q[CLIP_NUT] || 0;
-            const prevClip   = q[BOX_CLIP]  || 0;
-            // Update nut if it was previously auto-set (matched old clip qty) or is 0
-            if (currentNut === 0 || currentNut === prevClip) {
-              next[CLIP_NUT] = val;
-            }
-          }
-          return next;
-        });
-      }, []);
+      const setQty=useCallback((item,val)=>setQuantities(q=>nextMaterialQuantities(q,item,val)),[]);
+
       const addCustom    = ()=>setCustoms(c=>[...c,{id:Date.now(),name:"",qty:0}]);
       const removeCustom = id=>setCustoms(c=>c.filter(i=>i.id!==id));
       const updateCustom = (id,field,val)=>setCustoms(c=>c.map(i=>i.id===id?{...i,[field]:val}:i));
@@ -606,23 +609,23 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       };
 
       const shared = {jobName,jobLocation,quantities,customs};
-      const inputStyle = {display:"block",width:"100%",border:"1.5px solid #e5e7eb",borderRadius:8,fontSize:15,color:"#111827",padding:"10px 12px",fontFamily:"'Outfit',sans-serif",outline:"none",background:"#fafafa"};
-      const labelStyle = {display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:5,fontFamily:"'Outfit',sans-serif"};
+      const inputStyle = {display:"block",width:"100%",border:"1.5px solid #e5e7eb",borderRadius:8,fontSize:15,color:"var(--ws-text)",padding:"10px 12px",fontFamily:"'Field Sans',Arial,sans-serif",outline:"none",background:"var(--ws-raised)"};
+      const labelStyle = {display:"block",fontSize:11,fontWeight:600,color:"var(--ws-muted)",marginBottom:5,fontFamily:"'Field Sans',Arial,sans-serif"};
 
       return (
-        <div style={{minHeight:"100vh",background:"#f3f4f6",maxWidth:540,margin:"0 auto"}}>
+        <div style={{minHeight:"100vh",background:"var(--ws-bg)",maxWidth:920,margin:"0 auto"}}>
 
           {/* Header */}
-          <header style={{background:"#111827",padding:"14px 20px",position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <header style={{background:"var(--ws-text)",padding:"14px 20px",position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:22}}>⚡</span>
-                <span style={{fontSize:20,fontWeight:800,color:"#fff",letterSpacing:-0.5,fontFamily:"'Outfit',sans-serif"}}>Field List</span>
+                <img src="../shared/mark.png" alt="" style={{width:30,height:30,borderRadius:8}}/>
+                <span style={{fontSize:20,fontWeight:800,color:"var(--ws-panel)",letterSpacing:-0.5,fontFamily:"'Field Sans',Arial,sans-serif"}}>Field List</span>
               </div>
-              <div style={{fontSize:11,color:"#6b7280",letterSpacing:0.5,marginTop:1,fontFamily:"'Outfit',sans-serif"}}>Electrical Material Tracker</div>
+              <div style={{fontSize:11,color:"var(--ws-muted)",letterSpacing:0.5,marginTop:1,fontFamily:"'Field Sans',Arial,sans-serif"}}>Electrical Material Tracker</div>
             </div>
             {totalFilled>0 && (
-              <div style={{background:"#1d4ed8",color:"#fff",borderRadius:20,padding:"4px 14px",fontSize:13,fontWeight:700,fontFamily:"'Outfit',sans-serif"}}>
+              <div style={{background:"var(--ws-accent)",color:"var(--ws-panel)",borderRadius:20,padding:"4px 14px",fontSize:13,fontWeight:700,fontFamily:"'Field Sans',Arial,sans-serif"}}>
                 {totalFilled} item{totalFilled!==1?"s":""}
               </div>
             )}
@@ -631,8 +634,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
           <div style={{padding:"14px 12px"}}>
 
             {/* Job Info */}
-            <div style={{background:"#fff",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"#9ca3af",padding:"12px 16px 10px",borderBottom:"1px solid #f3f4f6",fontFamily:"'Outfit',sans-serif"}}>
+            <div style={{background:"var(--ws-panel)",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"var(--ws-muted)",padding:"12px 16px 10px",borderBottom:"1px solid #f3f4f6",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                 Job Information
               </div>
               <div style={{padding:"12px 16px 16px",display:"flex",flexDirection:"column",gap:10}}>
@@ -649,24 +652,24 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
 
             {/* Search */}
             <div style={{position:"relative",marginBottom:10}}>
-              <span style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"#9ca3af",pointerEvents:"none"}}>🔍</span>
+              <span style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"var(--ws-muted)",pointerEvents:"none"}}>🔍</span>
               <input
-                style={{display:"block",width:"100%",border:"1.5px solid #e5e7eb",borderRadius:10,fontSize:15,color:"#111827",padding:"11px 12px 11px 40px",fontFamily:"'Outfit',sans-serif",outline:"none",background:"#fff",boxSizing:"border-box"}}
+                style={{display:"block",width:"100%",border:"1.5px solid #e5e7eb",borderRadius:10,fontSize:15,color:"var(--ws-text)",padding:"11px 12px 11px 40px",fontFamily:"'Field Sans',Arial,sans-serif",outline:"none",background:"var(--ws-panel)",boxSizing:"border-box"}}
                 placeholder="Search materials…"
                 value={search}
                 onChange={e=>setSearch(e.target.value)}
               />
               {search && (
-                <button onClick={()=>setSearch("")} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"#9ca3af",fontSize:18,cursor:"pointer",lineHeight:1,padding:0}}>✕</button>
+                <button onClick={()=>setSearch("")} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--ws-muted)",fontSize:18,cursor:"pointer",lineHeight:1,padding:0}}>✕</button>
               )}
             </div>
 
             {/* Toolbar */}
             <div style={{display:"flex",gap:8,marginBottom:10}}>
-              <button onClick={()=>setFilterFilled(v=>!v)} style={{flex:1,background:filterFilled?"#eff6ff":"#fff",border:filterFilled?"1.5px solid #bfdbfe":"1.5px solid #e5e7eb",color:filterFilled?"#1d4ed8":"#6b7280",borderRadius:8,padding:"10px 12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>
+              <button onClick={()=>setFilterFilled(v=>!v)} style={{flex:1,background:filterFilled?"#eff6ff":"var(--ws-panel)",border:filterFilled?"1.5px solid #bfdbfe":"1.5px solid #e5e7eb",color:filterFilled?"#1d4ed8":"var(--ws-muted)",borderRadius:8,padding:"10px 12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                 {filterFilled?"● Filled only":"○ All items"}
               </button>
-              <button onClick={clearAll} style={{flex:1,background:"#fff",border:"1.5px solid #e5e7eb",color:"#6b7280",borderRadius:8,padding:"10px 12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>✕ Clear all</button>
+              <button onClick={clearAll} style={{flex:1,background:"var(--ws-panel)",border:"1.5px solid #e5e7eb",color:"var(--ws-muted)",borderRadius:8,padding:"10px 12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>✕ Clear all</button>
             </div>
 
             {/* Categories */}
@@ -682,8 +685,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
             })}
 
             {/* Custom Items */}
-            <div style={{background:"#fff",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"#9ca3af",padding:"12px 16px 10px",borderBottom:"1px solid #f3f4f6",fontFamily:"'Outfit',sans-serif"}}>Custom Items</div>
+            <div style={{background:"var(--ws-panel)",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"var(--ws-muted)",padding:"12px 16px 10px",borderBottom:"1px solid #f3f4f6",fontFamily:"'Field Sans',Arial,sans-serif"}}>Custom Items</div>
               <div style={{padding:"12px 16px 8px"}}>
                 {customs.map((item,idx)=>(
                   <div key={item.id} style={{display:"flex",alignItems:"flex-end",gap:8,marginBottom:12}}>
@@ -693,11 +696,11 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                     </div>
                     <Stepper value={item.qty} onChange={v=>updateCustom(item.id,"qty",v)}/>
                     {customs.length>1 && (
-                      <button onClick={()=>removeCustom(item.id)} style={{background:"none",border:"none",color:"#d1d5db",fontSize:18,cursor:"pointer",paddingBottom:8}}>✕</button>
+                      <button onClick={()=>removeCustom(item.id)} style={{background:"none",border:"none",color:"var(--ws-line)",fontSize:18,cursor:"pointer",paddingBottom:8}}>✕</button>
                     )}
                   </div>
                 ))}
-                <button onClick={addCustom} style={{width:"100%",background:"none",border:"1.5px dashed #d1d5db",borderRadius:8,color:"#9ca3af",fontSize:13,fontWeight:600,padding:"10px",cursor:"pointer",fontFamily:"'Outfit',sans-serif",marginBottom:4}}>
+                <button onClick={addCustom} style={{width:"100%",background:"none",border:"1.5px dashed #d1d5db",borderRadius:8,color:"var(--ws-muted)",fontSize:13,fontWeight:600,padding:"10px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",marginBottom:4}}>
                   + Add Another Item
                 </button>
               </div>
@@ -705,8 +708,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
 
             {/* Actions */}
             <div style={{display:"flex",gap:10,marginTop:4,paddingBottom:48}}>
-              <button onClick={()=>setModal("preview")} style={{flex:1,background:"#fff",border:"1.5px solid #e5e7eb",color:"#374151",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>📋 Preview</button>
-              <button onClick={()=>setModal("export")}  style={{flex:2,background:"#1d4ed8",border:"none",color:"#fff",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>⬆ Export</button>
+              <button onClick={()=>setModal("preview")} style={{flex:1,background:"var(--ws-panel)",border:"1.5px solid #e5e7eb",color:"var(--ws-text)",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>📋 Preview</button>
+              <button onClick={()=>setModal("export")}  style={{flex:2,background:"var(--ws-accent)",border:"none",color:"var(--ws-panel)",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>⬆ Export</button>
             </div>
           </div>
 

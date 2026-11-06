@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="../icon-192.png">
+<script src="../shared/store.js"></script>
+<script src="../shared/jspdf.js"></script>
+<script src="../shared/pdf-delivery.js"></script>
 <script src="../shared/fgt.js" data-tool="survey"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fan Guys – Site Survey</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+
+
 <style>
   :root {
     /* ── Go Fan Yourself / VividAir Brand Colors ── */
@@ -586,11 +590,13 @@
   .dark .hw-warn { color: #fcd34d; }
   .hw-info { background: rgba(37,99,168,0.08); border-color: rgba(37,99,168,0.3); color: var(--primary-light); }
 </style>
+<link rel="stylesheet" href="../shared/workspace.css">
+<script src="../shared/workspace.js" defer></script>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="logo-mark">FG</div>
+  <img src="../shared/mark.png" alt="Fan Guys" style="width:40px;height:40px;border-radius:10px;flex:none">
   <h1>Fan Guys &nbsp;<span>Site Survey</span></h1>
   <div class="header-right">
     <button class="btn-icon no-print" onclick="startNewSurvey()" title="Start a new survey">＋</button>
@@ -674,7 +680,7 @@
           <div class="field">
             <label>After-Hours / Special Access?</label>
             <div class="toggle-row" style="margin-top: 4px;">
-              <button class="toggle-btn" id="afterBtn" onclick="toggleAfterHours()">No</button>
+              <button class="toggle-btn" id="afterBtn" onclick="toggleAfterHours()">Not checked</button>
               <span id="afterLabel" style="font-size:13px;color:var(--text3)"></span>
             </div>
           </div>
@@ -1119,7 +1125,7 @@
         </div>
         <div class="code-item">
           <div class="code-icon">↕️</div>
-          <div><strong>Vertical Clearance:</strong> Minimum <strong>36 inches (3 ft)</strong> vertical clearance required from HVLS fan blade to sprinkler deflectors</div>
+          <div><strong>Vertical Clearance:</strong> Check the applicable sprinkler requirements and manufacturer instructions. A common referenced baseline is <strong>36 inches (3 ft)</strong>; this is not a site-specific approval.</div>
         </div>
         <div class="code-item">
           <div class="code-icon">🚒</div>
@@ -1131,7 +1137,7 @@
         <div class="card-title">📐 General Sizing Rules of Thumb</div>
         <div class="code-item">
           <div class="code-icon">📊</div>
-          <div><strong>Fan Diameter vs. Ceiling Height:</strong> Maximum recommended fan diameter ≈ floor-to-blade clearance height. Example: 20 ft ceiling with 1 ft downtube = 19 ft max recommended diameter.</div>
+          <div><strong>Fan Diameter vs. Ceiling Height:</strong> Planning heuristic only: fan diameter near blade height needs review. This is not a universal manufacturer or code limit. Example: 20 ft ceiling with 1 ft downtube = 19 ft max recommended diameter.</div>
         </div>
         <div class="code-item">
           <div class="code-icon">⬆️</div>
@@ -1168,7 +1174,7 @@
     <div class="page" id="page-summary">
       <div class="print-header" id="printHeader">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
-          <div style="width:48px;height:48px;background:#e8222a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:#fff">FG</div>
+          <img src="../shared/mark.png" alt="Fan Guys" style="width:48px;height:48px;border-radius:10px">
           <div>
             <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#1c1c1c">FAN GUYS – SITE SURVEY PROPOSAL</div>
             <div style="font-size:13px;color:#666">This is a site survey and layout proposal only — final quote subject to field verification.</div>
@@ -1178,12 +1184,12 @@
       </div>
 
       <div class="page-header">
-        <h2>📊 Live Summary &amp; Proposal</h2>
+        <h2>📊 Live Survey Summary</h2>
         <p>Real-time overview — updates as you fill out fan details.</p>
       </div>
 
       <div class="flex-row no-print" style="margin-bottom:20px;gap:10px">
-        <button class="btn btn-primary" onclick="printProposal()">🖨 Export PDF / Print Proposal</button>
+        <button class="btn btn-primary" onclick="printProposal()">🖨 Save / Share Survey PDF</button>
         <button class="btn btn-outline" onclick="exportJSON()">⬇ Export JSON</button>
       </div>
 
@@ -1222,7 +1228,7 @@
         <div class="card-title">⚡ Electrical / Breaker Summary</div>
         <div class="alert alert-info" style="margin-bottom:12px">
           <span class="alert-icon">💡</span>
-          <div>Based on official GFY spec sheet FLA data. NEC 125% rule for branch breakers. Always verify with a licensed electrician.</div>
+          <div>Reference motor-load inventory only. VFD input ratings, conductor conditions, and manufacturer-specified protection must be checked separately.</div>
         </div>
         <div id="aggregateBreakerCard">
           <div style="color:var(--text3);font-size:14px">Set fans to Turnkey with voltage selected to see breaker summary.</div>
@@ -1278,6 +1284,7 @@ let fans = [];
 let fanCounter = 0;
 let darkMode = false;
 let afterHours = false;
+let afterHoursChecked = false;
 
 // VividAir / Go Fan Yourself product catalog
 // Each entry: { label, sizes: [{dia, label}], notes }
@@ -1351,15 +1358,9 @@ const GFY_PRODUCTS = [
 ];
 
 // ═══════════════════════════════════════════════════════════
-// AMP DRAW & BREAKER CALCULATOR
-// From GFY Z-Tech Spec Sheet (official data)
-// Each fan has its own VFD. NEC 80% rule on breaker capacity.
-// ═══════════════════════════════════════════════════════════
-
-// Amps per fan at 480V 3-phase (from spec sheet)
-// Scale factor for other voltages: I = (480/V) × I_480 for 3ph
-// For 240V 1ph: I = (480/240) × I_480 (VFD draws proportionally more amps at lower voltage)
-// For 208V 3ph: I = (480/208) × I_480
+// MOTOR REFERENCE LOAD INVENTORY
+// Inherited model data is not a verified VFD input-current or protective-device table.
+// Other-voltage / single-phase input currents are intentionally not extrapolated.
 const AMP_DATA = {
   'z-tech': {
     // dia (ft) → amps @ 480V 3ph
@@ -1386,33 +1387,18 @@ const AMP_DATA = {
 };
 
 // Voltage scaling: get actual amps at the supply voltage
-function getAmpsAtVoltage(productId, diaft, voltKey) {
-  const table = AMP_DATA[productId];
-  if (!table) return null;
-  const baseAmps = table[diaft]; // amps @ 480V 3ph from spec sheet
-  if (!baseAmps) return null;
-
-  // ConZumer is 120V/1ph plug-in — no VFD scaling
-  if (productId === 'conzumer') return baseAmps;
-
-  switch (voltKey) {
-    case '480V 3ph': return baseAmps;
-    case '208V 3ph': return +(baseAmps * (480 / 208)).toFixed(2);
-    case '240V 3ph': return +(baseAmps * (480 / 240)).toFixed(2);
-    case '240V 1ph': return +(baseAmps * (480 / 240)).toFixed(2);
-    default: return baseAmps;
-  }
+function getAmpsAtVoltage(productId,diaft,voltKey){
+  const table=AMP_DATA[productId],base=table&&table[diaft];if(!base)return null;
+  if(productId==='conzumer')return voltKey==='120V 1ph'?base:null;
+  // The inherited table is a motor reference at 480 V, not a drive-input-current table.
+  // Do not infer single-phase or other-voltage input current with a simple voltage ratio.
+  return voltKey==='480V 3ph'?base:null;
 }
 
-// Minimum breaker size is 20A (company standard — no 15A breakers used)
-const BREAKER_SIZES_3P = [20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 125, 150, 200];
-const BREAKER_SIZES_1P = [20, 25, 30, 35, 40, 50, 60, 70, 80, 100];
-
-function getMinBreakerSize(amps, phase) {
-  // NEC: breaker must be ≥ 125% of FLA (continuous load rule)
-  const minBreaker = amps * 1.25;
-  const sizes = phase === '1ph' ? BREAKER_SIZES_1P : BREAKER_SIZES_3P;
-  return sizes.find(s => s >= minBreaker) || sizes[sizes.length - 1];
+function getMinBreakerSize(){return null;} // Protective device is recorded from approved design/manual; never inferred from motor FLA alone.
+function planningBreakerSize(amps){
+  const target=Number(amps)*1.25;
+  return Number.isFinite(target)&&target>0 ? [15,20,25,30,35,40,45,50,60,70,80,90,100,110,125,150,175,200,225,250,300,350,400].find(n=>n>=target)||null : null;
 }
 
 function calcBreakerSummary(fans) {
@@ -1427,7 +1413,7 @@ function calcBreakerSummary(fans) {
     const voltRaw = val('fanVolt-' + id);
     const loc = val('fanLoc-' + id) || 'Fan #' + id;
     const pwrSrc = getRadioVal('fanPwrSrc', id); // 'panel' or 'lastfan'
-    if (!pid || !dia || !voltRaw || voltRaw === 'Other') return;
+    if (!pid || !dia || !voltRaw || voltRaw === 'Other' || !pwrSrc) return;
     const amps = getAmpsAtVoltage(pid, dia, voltRaw);
     if (!amps) return;
     const is1ph = voltRaw.includes('1ph');
@@ -1463,9 +1449,9 @@ function calcBreakerSummary(fans) {
   // For each circuit, calculate the required breaker size based on TOTAL amps on that circuit
   circuits.forEach(c => {
     // NEC: breaker ≥ 125% of total FLA on the circuit
-    c.breakerSize = getMinBreakerSize(c.totalAmps, c.phase);
-    c.usableAmps = +(c.breakerSize * 0.8).toFixed(1);
-    c.overloaded = c.totalAmps > c.usableAmps;
+    c.breakerSize = null;
+    c.usableAmps = null;
+    c.overloaded = false;
   });
 
   return circuits;
@@ -1489,7 +1475,7 @@ function renderBreakerCard(fanId) {
   }
 
   const amps = getAmpsAtVoltage(pid, dia, voltRaw);
-  if (!amps) { container.innerHTML = ''; return; }
+  if (!amps) { container.innerHTML = '<div class="alert alert-warn">Reference current not available for this model/supply. Check the motor nameplate and VFD input rating.</div>'; return; }
 
   const is1ph = voltRaw.includes('1ph');
   const phase = is1ph ? '1ph' : '3ph';
@@ -1513,15 +1499,15 @@ function renderBreakerCard(fanId) {
     const breakerSize = getMinBreakerSize(amps, phase);
     container.innerHTML = `
       <div class="breaker-result" style="margin-top:12px">
-        <div class="breaker-result-title">⚡ Breaker Recommendation (Panel Feed)</div>
+        <div class="breaker-result-title">⚡ Reference Load (Panel Feed)</div>
         <div class="breaker-grid">
           <div class="breaker-stat"><div class="breaker-stat-label">Fan FLA</div><div class="breaker-stat-val">${amps}A</div></div>
           <div class="breaker-stat"><div class="breaker-stat-label">Supply</div><div class="breaker-stat-val">${voltRaw}</div></div>
-          <div class="breaker-stat"><div class="breaker-stat-label">Min Breaker</div><div class="breaker-stat-val red">${breakerSize}A</div></div>
+          <div class="breaker-stat"><div class="breaker-stat-label">Protection</div><div class="breaker-stat-val red">${esc(val('fanBreaker-'+fanId)||'Not checked')}</div></div>
           <div class="breaker-stat"><div class="breaker-stat-label">Poles</div><div class="breaker-stat-val">${poles}-Pole</div></div>
         </div>
         <div style="font-size:12px;color:var(--text3);margin-top:6px">
-          This fan feeds from the panel. If other fans daisy-chain off this one, the breaker must cover the combined load — see Summary.
+          Reference load only. Record input ratings, conductor conditions, and protective device from the matched manufacturer instructions and approved circuit design.
         </div>
       </div>`;
   }
@@ -1534,13 +1520,13 @@ function renderAggregateBreakerSummary() {
   const circuits = calcBreakerSummary(fans);
 
   if (circuits.length === 0) {
-    container.innerHTML = `<div style="color:var(--text3);font-size:14px">Set fans to Turnkey scope with voltage and power source selected to see breaker summary.</div>`;
+    container.innerHTML = `<div style="color:var(--text3);font-size:14px">Load inventory incomplete. Select scope and power source; verify current for each selected model and supply. Other-voltage input currents are not inferred from the 480 V motor table.</div>`;
     return;
   }
 
   let html = '';
   circuits.forEach((c, idx) => {
-    const fanNames = c.fans.map(f => f.loc).join(' → ');
+    const fanNames = c.fans.map(f => esc(f.loc)).join(' → ');
     const overloadWarn = c.overloaded
       ? `<div class="alert alert-danger" style="margin-top:8px"><span class="alert-icon">🚫</span><div><strong>Circuit Overloaded:</strong> ${c.totalAmps}A total exceeds 80% of ${c.breakerSize}A breaker (${c.usableAmps}A usable). Split this chain or upsize breaker.</div></div>`
       : '';
@@ -1555,20 +1541,22 @@ function renderAggregateBreakerSummary() {
         </div>
         <div class="breaker-grid">
           <div class="breaker-stat"><div class="breaker-stat-label">Total FLA</div><div class="breaker-stat-val">${c.totalAmps.toFixed(1)}A</div></div>
-          <div class="breaker-stat"><div class="breaker-stat-label">80% Usable</div><div class="breaker-stat-val">${c.usableAmps}A</div></div>
-          <div class="breaker-stat"><div class="breaker-stat-label">Breaker Size</div><div class="breaker-stat-val red">${c.breakerSize}A</div></div>
+          <div class="breaker-stat"><div class="breaker-stat-label">Planning only — not verified</div><div class="breaker-stat-val">${planningBreakerSize(c.totalAmps)?planningBreakerSize(c.totalAmps)+'A':'Review required'}</div></div>
+          <div class="breaker-stat"><div class="breaker-stat-label">Capacity</div><div class="breaker-stat-val">Not verified</div></div>
+          <div class="breaker-stat"><div class="breaker-stat-label">Protection</div><div class="breaker-stat-val red">${esc(val('fanBreaker-'+c.fans[0].id)||'Not checked')}</div></div>
           <div class="breaker-stat"><div class="breaker-stat-label">Poles</div><div class="breaker-stat-val">${c.poles}-Pole</div></div>
         </div>
         ${overloadWarn}
         <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.6">
           ${chainNote}
-          <strong>Calc:</strong> ${c.fans.map(f => f.amps + 'A').join(' + ')} = ${c.totalAmps.toFixed(1)}A total × 125% = ${(c.totalAmps * 1.25).toFixed(1)}A → <strong>${c.breakerSize}A ${c.poles}-pole breaker</strong> (${c.usableAmps}A usable at 80%).<br>
-          <em>Verify with licensed electrician. Final sizing subject to field conditions and local code.</em>
+          <strong>Reference load tally:</strong> ${c.fans.map(f => f.amps + 'A').join(' + ')} = ${c.totalAmps.toFixed(1)}A. Protective device and permissible circuit load remain unverified.<br>
+          <em>Planning number rounds 125% of the reference FLA up to the next common size. It is not a protective-device selection; verify drive input data, manufacturer instructions, conductor protection, field conditions and local code.</em>
         </div>
       </div>`;
   });
 
   // Totals row
+  const unverifiedFans=fans.filter(f=>getRadioVal('fanScope',f.id)==='turnkey').length-circuits.reduce((n,c)=>n+c.fans.length,0);if(unverifiedFans>0)html+='<div class="alert alert-warn">'+unverifiedFans+' turnkey fan(s) excluded: reference current, supply, or power source not checked.</div>';
   const totalBreakers = circuits.length;
   const totalFans = circuits.reduce((s, c) => s + c.fans.length, 0);
   html += `<div style="padding-top:10px;font-size:13px;font-weight:600;color:var(--text2)">
@@ -1598,9 +1586,9 @@ function toggleDark() {
 // AFTER HOURS TOGGLE
 // ═══════════════════════════════════════════════════════════
 function toggleAfterHours() {
-  afterHours = !afterHours;
+  if(!afterHoursChecked){afterHours=true;afterHoursChecked=true;}else if(afterHours){afterHours=false;}else{afterHoursChecked=false;afterHours=false;}
   const btn = document.getElementById('afterBtn');
-  btn.textContent = afterHours ? 'Yes' : 'No';
+  btn.textContent = !afterHoursChecked ? 'Not checked' : afterHours ? 'Yes' : 'No';
   btn.className = 'toggle-btn ' + (afterHours ? 'on' : 'off');
   document.getElementById('afterHoursNote').classList.toggle('hidden', !afterHours);
   updateSummary();
@@ -1921,7 +1909,7 @@ function renderFanCard(id) {
           </div>
           <div id="fanDaisyLockWarn-${id}" class="alert alert-warn hidden" style="margin-top:6px">
             <span class="alert-icon">⚠️</span>
-            <span>Adding this fan to the chain exceeds 80% of a 20A breaker. Consider feeding from panel or upsizing breaker.</span>
+            <span>Circuit capacity is not verified. Confirm the actual supply, protective device, and manufacturer-permitted wiring arrangement.</span>
           </div>
         </div>
 
@@ -1945,7 +1933,7 @@ function renderFanCard(id) {
         <div id="fanPwrDaisySub-${id}" class="hidden" style="margin-top:10px">
           <div class="alert alert-warn" style="margin-bottom:10px">
             <span class="alert-icon">🔗</span>
-            <div><strong>Daisy-Chain:</strong> Line side power tapped from previous fan's VFD output/supply. Verify upstream breaker capacity covers combined load of all chained fans.</div>
+            <div><strong>Daisy-Chain:</strong> Only manufacturer-approved supply-side power distribution. Never feed another drive from a VFD motor-output terminal. Verify upstream breaker capacity covers combined load of all chained fans.</div>
           </div>
           <div class="form-grid cols-2">
             <div class="field">
@@ -2045,6 +2033,7 @@ function makeRadio(name, id, val, label, onchange) {
 
 function initRadioGroup(name, id) {
   const inputs = document.querySelectorAll(`input[name="${name}-${id}"]`);
+  if(inputs.length){const group=inputs[0].closest('.radio-group')||inputs[0].parentElement.parentElement; if(!group.querySelector('.unchecked-note')){const note=document.createElement('small');note.className='unchecked-note';note.textContent='Not checked';note.style.cssText='display:block;color:var(--ws-muted);font-size:11px;margin:6px 0';group.appendChild(note);const refresh=()=>{note.hidden=Array.from(inputs).some(i=>i.checked);note.style.display=note.hidden?'none':'block';};inputs.forEach(i=>i.addEventListener('change',refresh));refresh();}}
   inputs.forEach(inp => {
     inp.addEventListener('change', () => {
       inputs.forEach(i => {
@@ -2082,94 +2071,8 @@ function onPwrSrcChange(id) {
 // Checks each fan's daisy-chain option: if selecting "daisy" would push the
 // current open circuit over 80% of a 20A breaker, lock that option out.
 function checkCircuitLocks() {
-  // Build running circuit totals in fan order (same logic as calcBreakerSummary)
-  let runningAmps = 0;
-  let runningVolt = null;
-  let circuitFull = false;
-
-  fans.forEach(f => {
-    const id = f.id;
-    const scope = getRadioVal('fanScope', id);
-    const pwrSrc = getRadioVal('fanPwrSrc', id);
-    const pid = val('fanModelSel-' + id);
-    const diaEl = document.getElementById('fanDia-' + id);
-    const dia = diaEl ? parseFloat(diaEl.value) : 0;
-    const voltRaw = val('fanVolt-' + id);
-    const daisyOpt = document.getElementById('fanPwrSrc-opt-' + id + '-lastfan');
-    const daisyInput = document.querySelector(`input[name="fanPwrSrc-${id}"][value="lastfan"]`);
-    const daisyWarn = document.getElementById('fanDaisyLockWarn-' + id);
-
-    if (scope !== 'turnkey') { circuitFull = false; runningAmps = 0; return; }
-
-    const amps = (pid && dia && voltRaw && voltRaw !== 'Other') ? getAmpsAtVoltage(pid, dia, voltRaw) : 0;
-
-    // Starting from panel = new circuit
-    if (pwrSrc === 'panel' || !pwrSrc) {
-      runningAmps = amps || 0;
-      runningVolt = voltRaw;
-      circuitFull = false;
-    } else {
-      // Daisy — add to running total
-      runningAmps = +(runningAmps + (amps || 0)).toFixed(2);
-    }
-
-    // Usable capacity of smallest breaker: 20A × 80% = 16A
-    const usable = 16; // 20A breaker at 80% NEC
-    const wouldOverload = amps ? (runningAmps > usable) : false;
-
-    // Lock daisy option on the NEXT fan if current circuit is full
-    // We flag circuitFull AFTER processing this fan so it affects the next one
-    // For this fan: if it's currently set to daisy AND that pushed over limit, warn
-    if (daisyWarn) {
-      daisyWarn.classList.toggle('hidden', !(pwrSrc === 'lastfan' && wouldOverload));
-    }
-
-    // Compute whether this fan fills the circuit
-    circuitFull = runningAmps >= usable;
-  });
-
-  // Second pass: for each fan that is NOT yet assigned, check if daisy should be locked
-  // We do this by looking at whether the PREVIOUS circuit is full
-  let runningAmps2 = 0;
-  let prevFull = false;
-
-  fans.forEach(f => {
-    const id = f.id;
-    const scope = getRadioVal('fanScope', id);
-    const pwrSrc = getRadioVal('fanPwrSrc', id);
-    const pid = val('fanModelSel-' + id);
-    const diaEl = document.getElementById('fanDia-' + id);
-    const dia = diaEl ? parseFloat(diaEl.value) : 0;
-    const voltRaw = val('fanVolt-' + id);
-    const daisyOpt = document.getElementById('fanPwrSrc-opt-' + id + '-lastfan');
-    const daisyInput = document.querySelector(`input[name="fanPwrSrc-${id}"][value="lastfan"]`);
-    const lockNote = document.getElementById('fanDaisyLockNote-' + id);
-
-    if (scope !== 'turnkey') { prevFull = false; runningAmps2 = 0; return; }
-
-    const amps = (pid && dia && voltRaw && voltRaw !== 'Other') ? getAmpsAtVoltage(pid, dia, voltRaw) : 0;
-
-    // Lock daisy option if the circuit coming in is already full
-    const locked = prevFull;
-    if (daisyOpt) daisyOpt.style.opacity = locked ? '0.4' : '';
-    if (daisyOpt) daisyOpt.style.pointerEvents = locked ? 'none' : '';
-    if (daisyInput) daisyInput.disabled = locked;
-    if (lockNote) lockNote.classList.toggle('hidden', !locked);
-
-    // If this fan was set to daisy but is now locked, auto-switch to panel
-    if (locked && pwrSrc === 'lastfan' && daisyInput) {
-      const panelInput = document.querySelector(`input[name="fanPwrSrc-${id}"][value="panel"]`);
-      if (panelInput) { panelInput.checked = true; panelInput.dispatchEvent(new Event('change')); }
-    }
-
-    // Update running total
-    if (pwrSrc === 'panel' || !pwrSrc) {
-      runningAmps2 = amps || 0;
-    } else {
-      runningAmps2 = +(runningAmps2 + (amps || 0)).toFixed(2);
-    }
-    prevFull = runningAmps2 >= 16;
-  });
+  // Do not silently change the user's wiring choice using an assumed 20 A circuit.
+  fans.forEach(f=>{const id=f.id;const option=document.getElementById('fanPwrSrc-opt-'+id+'-lastfan');if(option){option.style.opacity='';option.style.pointerEvents='';}const input=document.querySelector(`input[name="fanPwrSrc-${id}"][value="lastfan"]`);if(input)input.disabled=false;const note=document.getElementById('fanDaisyLockNote-'+id);if(note)note.classList.add('hidden');const warn=document.getElementById('fanDaisyLockWarn-'+id);if(warn)warn.classList.add('hidden');});
 }
 
 function onScopeChange(id) {
@@ -2242,10 +2145,10 @@ function checkFanWarnings(id) {
     errors.push('Floor-to-blade clearance is less than 10 ft minimum (' + bladeH.toFixed(1) + ' ft estimated). Adjust downtube or verify ceiling height.');
   }
   if (dia > 24) {
-    errors.push('Fan diameter exceeds 24 ft NFPA 13 maximum.');
+    warns.push('Diameter exceeds 24 ft. Verify sprinkler-system scope, adopted requirements, and manufacturer instructions; this app cannot establish approval.');
   }
   if (dia > 0 && ch > 0 && dia > bladeH) {
-    warns.push('Fan diameter (' + dia + ' ft) exceeds floor-to-blade clearance (' + bladeH.toFixed(1) + ' ft). Consider a smaller fan or longer downtube.');
+    warns.push('Fan diameter (' + dia + ' ft) exceeds floor-to-blade clearance (' + bladeH.toFixed(1) + ' ft). Verify the selected fan and mounting requirements. A longer downtube lowers the blades and reduces floor clearance.');
   }
   if (dia > 0 && ch > 0 && dia > (bladeH * 0.85)) {
     if (!warns.some(w => w.includes('exceeds'))) {
@@ -2376,7 +2279,7 @@ function updateSummary() {
         <div class="summary-stat"><span class="stat-label">Diameter</span><span class="stat-val">${diaLabel}</span></div>
         <div class="summary-stat"><span class="stat-label">Ceiling Height</span><span class="stat-val">${ch ? ch + ' ft' : '—'}</span></div>
         <div class="summary-stat"><span class="stat-label">Downtube</span><span class="stat-val">${dt} ft</span></div>
-        <div class="summary-stat"><span class="stat-label">Mounting</span><span class="stat-val">${mount || '—'}</span></div>
+        <div class="summary-stat"><span class="stat-label">Mounting</span><span class="stat-val">${mount || 'Not checked'}</span></div>
         <div class="summary-stat"><span class="stat-label">Control</span><span class="stat-val">${ctrlLabel(ctrl)}</span></div>
         <div class="summary-stat"><span class="stat-label">Fire Alarm</span><span class="stat-val">${faLabel(fa)}</span></div>
         <div class="summary-stat"><span class="stat-label">Scope</span><span class="stat-val">${scopeLabel(scope)}</span></div>
@@ -2402,10 +2305,10 @@ function updateSummary() {
   const dtSummary = Object.entries(dtCounts)
     .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
     .map(([len, qty]) => `${qty}× ${len} ft`)
-    .join(', ') || '—';
+    .join(', ') || 'Not checked';
 
   // Render aggregated stats
-  const mountSummary = Object.entries(mounts).map(([k, v]) => `${v}× ${k}`).join(', ') || '—';
+  const mountSummary = Object.entries(mounts).map(([k, v]) => `${v}× ${k}`).join(', ') || 'Not checked';
   const statsHTML = `
     <div class="summary-stat"><span class="stat-label">Total Fans</span><span class="stat-val">${fans.length}</span></div>
     <div class="summary-stat"><span class="stat-label">Mounting Types</span><span class="stat-val" style="font-size:14px">${mountSummary}</span></div>
@@ -2419,7 +2322,7 @@ function updateSummary() {
     <div class="summary-stat"><span class="stat-label">Navigator 120V Conduit Needed</span><span class="stat-val">${navConduitTotal} ft</span></div>
     <div class="summary-stat"><span class="stat-label">Fans w/ FA Wire (Installers)</span><span class="stat-val">${faCount}</span></div>
     <div class="summary-stat"><span class="stat-label">Total FA Wire Run</span><span class="stat-val">${faDistTotal} ft</span></div>
-    <div class="summary-stat"><span class="stat-label">Site Access Type</span><span class="stat-val" style="font-size:13px">${accessLabels[accessType] || '—'}</span></div>
+    <div class="summary-stat"><span class="stat-label">Site Access Type</span><span class="stat-val" style="font-size:13px">${accessLabels[accessType] || 'Not checked'}</span></div>
     <div class="summary-stat"><span class="stat-label">Recommended Lift</span><span class="stat-val" style="font-size:13px">${liftReco ? liftReco.title : '—'}</span></div>
   `;
   statsEl.innerHTML = statsHTML;
@@ -2429,7 +2332,7 @@ function updateSummary() {
     const cls = w.type === 'error' ? 'alert-danger' : w.type === 'warn' ? 'alert-warn' : 'alert-info';
     const ico = w.type === 'error' ? '🚫' : w.type === 'warn' ? '⚠️' : '💡';
     return `<div class="alert ${cls}" style="margin-bottom:6px"><span class="alert-icon">${ico}</span><div>${esc(w.msg)}</div></div>`;
-  }).join('') : '<div style="color:var(--text3);font-size:14px">✅ No warnings.</div>';
+  }).join('') : '<div style="color:var(--text3);font-size:14px">No issues detected from entered data. Unchecked items remain unverified.</div>';
   if (warningsEl) warningsEl.innerHTML = warnHTML;
 
   // Breakdowns
@@ -2445,7 +2348,7 @@ function updateSummary() {
     if (getEquipQty('1man') > 0) equip.push(getEquipQty('1man') + '× Personnel Lift');
     if (getEquipQty('telehandler') > 0) equip.push(getEquipQty('telehandler') + '× Telehandler');
     aerialEl.innerHTML = `
-      <div class="summary-stat"><span class="stat-label">Site Access</span><span class="stat-val" style="font-size:13px">${accessLabels[accessType] || '—'}</span></div>
+      <div class="summary-stat"><span class="stat-label">Site Access</span><span class="stat-val" style="font-size:13px">${accessLabels[accessType] || 'Not checked'}</span></div>
       <div class="summary-stat"><span class="stat-label">Max Ceiling Height</span><span class="stat-val">${maxCH > 0 ? maxCH + ' ft' : '—'}</span></div>
       <div class="summary-stat"><span class="stat-label">Primary Lift Needed</span><span class="stat-val" style="font-size:13px">${liftReco ? liftReco.title : '—'}</span></div>
       <div class="summary-stat"><span class="stat-label">Additional Equipment</span><span class="stat-val" style="font-size:13px">${equip.length > 0 ? equip.join(', ') : 'None selected'}</span></div>
@@ -2461,19 +2364,19 @@ function updateJobSummary() {
   const jsc = document.getElementById('jobSummaryContent');
   const pm = document.getElementById('printMeta');
   if (!jsc) return;
-  const name = val('jobName') || '—';
+  const name = val('jobName') || 'Not checked';
   const street = val('addrStreet') || '';
   const city = val('addrCity') || '';
   const state = val('addrState') || '';
   const zip = val('addrZip') || '';
-  const addr = [street, city, state, zip].filter(Boolean).join(', ') || '—';
-  const hours = val('opHours') || '—';
-  const sales = val('salesName') || '—';
+  const addr = [street, city, state, zip].filter(Boolean).join(', ') || 'Not checked';
+  const hours = val('opHours') || 'Not checked';
+  const sales = val('salesName') || 'Not checked';
   jsc.innerHTML = `
     <div class="summary-stat"><span class="stat-label">Project</span><span class="stat-val">${esc(name)}</span></div>
     <div class="summary-stat"><span class="stat-label">Address</span><span class="stat-val" style="font-size:14px">${esc(addr)}</span></div>
     <div class="summary-stat"><span class="stat-label">Operating Hours</span><span class="stat-val" style="font-size:14px">${esc(hours)}</span></div>
-    <div class="summary-stat"><span class="stat-label">After-Hours Required</span><span class="stat-val">${afterHours ? '⚠️ Yes' : 'No'}</span></div>
+    <div class="summary-stat"><span class="stat-label">After-Hours Required</span><span class="stat-val">${!afterHoursChecked ? 'Not checked' : afterHours ? '⚠️ Yes' : 'No'}</span></div>
     <div class="summary-stat"><span class="stat-label">Sales Rep</span><span class="stat-val" style="font-size:14px">${esc(sales)}</span></div>
   `;
   // Update print meta
@@ -2496,10 +2399,19 @@ function toggleCollapsible(id) {
 // ═══════════════════════════════════════════════════════════
 // PRINT / EXPORT
 // ═══════════════════════════════════════════════════════════
-function printProposal() {
-  updateSummary();
-  showPage('summary');
-  setTimeout(() => window.print(), 200);
+async function printProposal() {
+  try{updateSummary();updateJobSummary();
+    const doc=new window.jspdf.jsPDF({unit:'pt',format:'letter'}),clean=window.FGTPDF.clean;let y=48;
+    const text=(value,size=10)=>{doc.setFontSize(size);for(const line of doc.splitTextToSize(clean(value),540)){if(y>744){doc.addPage();y=48;}doc.text(line,36,y);y+=size+5;}};
+    text('Fan Guys - Site survey',20);text(val('jobName')||'Job not checked',14);text([val('addrStreet'),val('addrCity'),val('addrState'),val('addrZip')].filter(Boolean).join(', '));
+    for(const [title,id] of [['Job details','jobSummaryContent'],['Totals','summaryStats'],['Warnings','warningsList'],['Fan details','fanBreakdowns'],['Aerial equipment','aerialSummaryContent'],['Electrical load inventory','aggregateBreakerCard']]){
+      const node=document.getElementById(id);if(!node)continue;y+=12;text(title,14);
+      const rows=node.querySelectorAll('.summary-stat,.alert,.breaker-stat,.fan-breakdown-title');
+      if(rows.length)rows.forEach(row=>text(row.textContent.replace(/\s+/g,' ').trim()));else text(node.textContent.replace(/\s+/g,' ').trim());
+    }
+    text('Unchecked fields remain unverified. Load tallies do not approve circuit protection.',9);
+    await window.FGTPDF.deliver(doc,'FanGuys-site-survey.pdf');
+  }catch(e){alert('PDF failed: '+e.message);}
 }
 
 function exportJSON() {
@@ -2509,7 +2421,7 @@ function exportJSON() {
     job: {
       name: val('jobName'), salesName: val('salesName'),
       address: `${val('addrStreet')}, ${val('addrCity')}, ${val('addrState')} ${val('addrZip')}`,
-      opHours: val('opHours'), afterHours, siteNotes: val('siteNotes')
+      opHours: val('opHours'), afterHours, afterHoursChecked, siteNotes: val('siteNotes')
     },
     fans: fans.map(f => {
       const id = f.id;
@@ -2520,7 +2432,7 @@ function exportJSON() {
       return {
         id, location: val('fanLoc-' + id),
         ceilingHeight: val('fanCH-' + id),
-        product: prod2 ? prod2.label : (pid2 || '—'),
+        product: prod2 ? prod2.label : (pid2 || 'Not checked'),
         diameter: diaLabel2,
         downtube: val('fanDT-' + id),
         control: getRadioVal('fanCtrl', id),
@@ -2863,13 +2775,13 @@ function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function ctrlLabel(v) {
-  return { vfd: 'Directly from VFD', keypad: 'Wired Keypad', navigator: 'Vivid Air Navigator (BACnet)' }[v] || '—';
+  return { vfd: 'Directly from VFD', keypad: 'Wired Keypad', navigator: 'Vivid Air Navigator (BACnet)' }[v] || 'Not checked';
 }
 function faLabel(v) {
-  return { installer: 'Installers run wire', customer: 'Customer responsible' }[v] || '—';
+  return { installer: 'Installers run wire', customer: 'Customer responsible' }[v] || 'Not checked';
 }
 function scopeLabel(v) {
-  return { turnkey: 'Turnkey (Full Power)', mechonly: 'Mechanical (Hang Only)', mechconn: 'Mechanical + Connections' }[v] || '—';
+  return { turnkey: 'Turnkey (Full Power)', mechonly: 'Mechanical (Hang Only)', mechconn: 'Mechanical + Connections' }[v] || 'Not checked';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2912,11 +2824,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var nav = {};
     fans.forEach(function(f) { nav[f.id] = !!window['navOutlet_' + f.id]; });
     var equip = Array.prototype.slice.call(document.querySelectorAll('.equip-chip.active')).map(function(b) { return b.id; });
-    return { v: 1, fanIds: fans.map(function(f) { return f.id; }), fanCounter: fanCounter, afterHours: afterHours,
+    return { v: 1, fanIds: fans.map(function(f) { return f.id; }), fanCounter: fanCounter, afterHours: afterHours, afterHoursChecked: afterHoursChecked,
              nav: nav, equip: equip, equipQtys: equipQtys, panelRoomStatus: panelRoomStatus,
              savedFanNames: savedFanNames, vals: vals, radios: radios, noId: noId };
   }
-  function writeNow() { if (restoring) return; try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {} }
+  function writeNow() { if (restoring) return; try { FGTStore.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {} }
   function save() { if (restoring) return; clearTimeout(timer); timer = setTimeout(writeNow, 400); }
   function applyFields(d, fire) {
     var i = 0;
@@ -2940,7 +2852,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   function restore() {
-    var d; try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { return; }
+    var d; try { d = JSON.parse(FGTStore.getItem(KEY)); } catch (e) { return; }
     if (!d || !d.vals) return;
     restoring = true;
     try {
@@ -2949,7 +2861,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Pass 1 sets values and fires the app's own handlers (fills dependent dropdowns);
       // pass 2 sets them again so dependent fields keep their saved choice.
       applyFields(d, true); applyFields(d, false);
-      if (!!d.afterHours !== afterHours) toggleAfterHours();
+      afterHours=!!d.afterHours;afterHoursChecked=d.afterHoursChecked===true||d.afterHours===true;document.getElementById('afterBtn').textContent=!afterHoursChecked?'Not checked':afterHours?'Yes':'No';document.getElementById('afterHoursNote').classList.toggle('hidden',!afterHours);
       Object.keys(d.nav || {}).forEach(function(id) { if (!!d.nav[id] !== !!window['navOutlet_' + id]) toggleNavOutlet(+id); });
       Array.prototype.slice.call(document.querySelectorAll('.equip-chip')).forEach(function(b) {
         if ((d.equip || []).indexOf(b.id) >= 0 !== b.classList.contains('active')) toggleEquip(b.id);
@@ -2966,7 +2878,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   window.startNewSurvey = function() {
     if (!confirm('Start a new survey? This clears everything on this phone.')) return;
-    try { localStorage.removeItem(KEY); } catch (e) {}
+    try { FGTStore.removeItem(KEY); } catch (e) {}
     restoring = true;
     location.reload();
   };

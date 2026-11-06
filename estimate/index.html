@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="../icon-192.png">
+<script src="../shared/store.js"></script>
 <script src="../shared/fgt.js" data-tool="estimate"></script>
 <script src="../shared/jspdf.js"></script>
 <script src="../shared/est-pdf.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fan Guys — Cost Estimator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet" />
+  
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #000; color: #e8dcc8; font-family: 'Barlow Condensed', sans-serif; min-height: 100vh; }
@@ -153,19 +155,21 @@
       .eyebrow { color: #b45309; }
     }
   </style>
+<link rel="stylesheet" href="../shared/workspace.css">
+<script src="../shared/workspace.js" defer></script>
 </head>
 <body>
 
 <div id="header">
   <div class="inner">
     <div class="top">
-      <div class="icon">🌀</div>
+      <img class="fg-logo" src="../shared/mark.png" alt="" style="width:44px;height:44px;border-radius:10px;flex:none;display:block!important">
       <div>
         <div class="brand">Fan Guys</div>
         <h1>COST ESTIMATOR</h1>
       </div>
     </div>
-    <p class="sub">Full cost estimate — materials, travel &amp; labor</p>
+    <p class="sub">Your internal pricing check · materials, travel &amp; labor</p><p class="sub">Completed calculations retain a job-specific labor-rate snapshot. <button type="button" id="refreshRates" style="color:var(--ws-accent);background:none;border:0;text-decoration:underline">Use latest default rates</button></p>
   </div>
 </div>
 
@@ -179,8 +183,8 @@
   </div>
 
   <div class="section">
-    <div class="lbl">Market Tier <span id="tier-note" style="text-transform:none;letter-spacing:0;font-weight:400;color:#6b7280"></span></div>
-    <div class="tier-grid" id="tier-grid"></div>
+    <div class="lbl">Travel allowance tier <span id="tier-note" style="text-transform:none;letter-spacing:0;font-weight:400;color:#6b7280"></span></div>
+    <div class="tier-grid" id="tier-grid"></div><p class="sub-text">Editable planning allowances. City lookup does not fetch live hotel or rental prices.</p>
     <button id="reset-auto">Reset to auto</button>
   </div>
 
@@ -292,7 +296,7 @@
       <div class="total-row"><span class="total-lbl">Materials &amp; Travel</span><span class="total-val" id="t-costs"></span></div>
       <div class="total-row"><span class="total-lbl">Combined Cost</span><span class="total-val" id="t-combined"></span></div>
       <div class="total-row"><span class="total-lbl">Margin (30%)</span><span class="total-val green" id="t-margin"></span></div>
-      <div class="quote-row"><span class="quote-lbl">Suggested Quote</span><span class="quote-val" id="t-quote"></span></div>
+      <div id="scheduleSummary" class="schedule-summary"></div><div id="rateIssues" role="status"></div><div class="quote-row"><span class="quote-lbl">Pricing check · 30% margin</span><span class="quote-val" id="t-quote"></span></div>
     </div>
     <div class="btn-row">
       <button id="new-btn">&#8635; New Estimate</button>
@@ -302,6 +306,13 @@
 </div>
 
 <script>
+function escAttr(s) { return String(s == null ? '' : s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+function missingRates() {
+ var rates=FGT.rates()||{}, missing=[];
+ TYPES.forEach(function(t){MODELS.forEach(function(m){var v=(rates[m.id]||{})[t]; if((qtyByType[t][m.id]||0)>0 && (!(Number.isFinite(v) && v>=0) || (v===0&&!FGTStore.readRaw('fgt-rates-reviewed-v2',false)))) missing.push(m.name+' · '+TYPE_SHORT[t]);});});
+ customFans.forEach(function(c,i){if(c.qty>0 && !(Number.isFinite(c.labor)&&c.labor>=0)) missing.push(c.name||'Custom fan '+(i+1));});
+ return missing;
+}
 var MODELS = [
   { id:'ztech',  name:'Z-Tech / Z-Tech3 / ConZumer', taz:false, labor:{ turnkey:0, mech_hook:0, mech_hang:0 } },
   { id:'zchill', name:'Z-Chill',                      taz:false, labor:{ turnkey:0, mech_hook:0, mech_hang:0 } },
@@ -506,13 +517,14 @@ function buildFanGrid() {
     row.innerHTML =
       '<div class="fan-row-info">' +
         '<div class="fan-row-name">' + m.name + '</div>' +
-        '<div class="fan-row-rate">Labor: ' + fmt(rate) + '/fan' + matNote + '</div>' +
+        '<div class="fan-row-rate">Labor: ' + ((FGT.rates()||{})[m.id] && Number.isFinite((FGT.rates()[m.id]||{})[installType]) && ((FGT.rates()[m.id]||{})[installType]!==0 || FGTStore.readRaw('fgt-rates-reviewed-v2',false)) ? fmt(rate)+'/fan' : 'Rate missing') + matNote + '</div>' +
       '</div>' +
       '<div class="qty-ctrl">' +
         '<button class="qty-btn" data-id="' + m.id + '" data-dir="-1">&#8722;</button>' +
         '<div class="qty-num" id="qty-' + m.id + '">' + (fanQtys[m.id]||0) + '</div>' +
         '<button class="qty-btn" data-id="' + m.id + '" data-dir="1">+</button>' +
       '</div>';
+    row.querySelectorAll('.qty-btn').forEach(function(b){b.setAttribute('aria-label',(b.getAttribute('data-dir')==='1'?'Add ':'Remove ')+m.name);});
     grid.appendChild(row);
   }
   var btns = grid.querySelectorAll('.qty-btn');
@@ -549,9 +561,9 @@ function buildCustomRow(idx) {
       '<button class="custom-remove" data-idx="' + idx + '">Remove</button>' +
     '</div>' +
     '<div class="custom-fields">' +
-      '<input type="text" class="cf-name" placeholder="Fan name" maxlength="30" value="' + (c.name||'') + '" />' +
-      '<input type="number" class="cf-labor" placeholder="Labor $/fan" min="0" value="' + (c.labor||'') + '" />' +
-      '<input type="number" class="cf-material full" placeholder="Material $/fan (optional)" min="0" value="' + (c.material||'') + '" />' +
+      '<input type="text" class="cf-name" placeholder="Fan name" maxlength="30" value="' + escAttr(c.name||'') + '" />' +
+      '<input type="number" class="cf-labor" placeholder="Labor $/fan" min="0" value="' + escAttr(c.labor == null ? '' : c.labor) + '" />' +
+      '<input type="number" class="cf-material full" placeholder="Material $/fan (optional)" min="0" value="' + escAttr(c.material||'') + '" />' +
     '</div>' +
     '<label class="custom-elec-row">' +
       '<input type="checkbox" class="cf-elec"' + (c.needsElec?' checked':'') + ' />' +
@@ -568,10 +580,10 @@ function buildCustomRow(idx) {
   var matEl = box.querySelector('.cf-material');
   var elecEl = box.querySelector('.cf-elec');
   var qtyEl = box.querySelector('.cf-qty');
-  nameEl.addEventListener('input', function() { customFans[idx].name = this.value.trim(); });
-  laborEl.addEventListener('input', function() { customFans[idx].labor = parseFloat(this.value)||0; });
-  matEl.addEventListener('input', function() { customFans[idx].material = parseFloat(this.value)||0; });
-  elecEl.addEventListener('change', function() { customFans[idx].needsElec = this.checked; });
+  nameEl.addEventListener('input', function() { customFans[idx].name = this.value.trim();document.getElementById('results').style.display='none'; });
+  laborEl.addEventListener('input', function() { customFans[idx].labor = this.value.trim()===''?null:Math.max(0,parseFloat(this.value)||0);document.getElementById('results').style.display='none'; });
+  matEl.addEventListener('input', function() { customFans[idx].material = Math.max(0,parseFloat(this.value)||0);document.getElementById('results').style.display='none'; });
+  elecEl.addEventListener('change', function() { customFans[idx].needsElec = this.checked;document.getElementById('results').style.display='none'; });
   box.querySelector('.cf-minus').addEventListener('click', function() {
     customFans[idx].qty = Math.max(0, (customFans[idx].qty||0) - 1);
     qtyEl.textContent = customFans[idx].qty;
@@ -583,14 +595,14 @@ function buildCustomRow(idx) {
     updateFanTotal(); document.getElementById('results').style.display = 'none';
   });
   box.querySelector('.custom-remove').addEventListener('click', function() {
-    customFans.splice(idx, 1);
+    delete overrides['labor_custom_'+c.id];delete overrides['mat_custom_'+c.id];customFans.splice(idx, 1);
     buildCustomFans(); updateFanTotal(); document.getElementById('results').style.display = 'none';
   });
   return box;
 }
 
 document.getElementById('add-custom-btn').addEventListener('click', function() {
-  customFans.push({ name:'', labor:0, material:0, needsElec:false, qty:0 });
+  customFans.push({ id:FGTStore.uid(), name:'', labor:null, material:0, needsElec:false, qty:0 });
   buildCustomFans(); updateFanTotal();
 });
 
@@ -633,7 +645,7 @@ function buildTierGrid() {
       '<div class="tier-rates">Hotel $' + (key===active?hotelDisplay:t.hotel) + '/night &middot; Car $' + t.car + '/day</div>';
     (function(k) {
       div.addEventListener('click', function() {
-        manualTier = k; overrides = {};
+        manualTier = k;
         buildTierGrid(); updateTierNote();
       });
     })(key);
@@ -659,7 +671,7 @@ function updateTierNote() {
 }
 
 document.getElementById('reset-auto').addEventListener('click', function() {
-  manualTier = null; overrides = {}; buildTierGrid(); updateTierNote();
+  manualTier = null; buildTierGrid(); updateTierNote();
 });
 
 // Zip or city
@@ -688,7 +700,7 @@ function setPlace(city, state) {
   var info = getCityInfo(city);
   locationInfo = { city:city, state:state, tier:info.tier, hotel:info.hotel };
   var td = getTierData();
-  fb.innerHTML = '<span style="color:' + td.color + '">📍 ' + city + ', ' + state + '</span>' +
+  fb.innerHTML = '<span style="color:' + td.color + '">📍 ' + escAttr(city) + ', ' + escAttr(state) + '</span>' +
     (!manualTier ? '<span style="color:#6b7280;font-weight:400"> — ' + td.label + (info.hotel ? ' · $' + info.hotel + '/night' : '') + '</span>' : '');
   document.getElementById('zip-error').style.display = 'none';
   buildTierGrid(); updateTierNote();
@@ -799,23 +811,23 @@ wirePills('steel-pills', function(val) {
   var descs = { none:'Mounting on I-beam — no angle iron needed', standard:'2 pieces of angle iron per fan', double:'4 pieces of angle iron per fan' };
   document.getElementById('steel-desc').textContent = descs[val];
   document.getElementById('steel-alert').style.display = val === 'double' ? 'block' : 'none';
-  overrides = {}; document.getElementById('results').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
 });
 wirePills('travel-pills', function(val) {
   travelMode = val;
   document.getElementById('miles-section').style.display = val === 'drive' ? 'block' : 'none';
-  overrides = {}; document.getElementById('results').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
 });
 
 // Crew
 document.getElementById('crew-minus').addEventListener('click', function() {
-  if (crewSize > 1) { crewSize--; document.getElementById('crew-num').textContent = crewSize; document.getElementById('crew-unit').textContent = crewSize===1?'person':'persons'; updateFanTotal(); overrides = {}; document.getElementById('results').style.display = 'none'; }
+  if (crewSize > 1) { crewSize--; document.getElementById('crew-num').textContent = crewSize; document.getElementById('crew-unit').textContent = crewSize===1?'person':'persons'; updateFanTotal(); document.getElementById('results').style.display = 'none'; }
 });
 document.getElementById('crew-plus').addEventListener('click', function() {
-  crewSize++; document.getElementById('crew-num').textContent = crewSize; document.getElementById('crew-unit').textContent = crewSize===1?'person':'persons'; updateFanTotal(); overrides = {}; document.getElementById('results').style.display = 'none';
+  crewSize++; document.getElementById('crew-num').textContent = crewSize; document.getElementById('crew-unit').textContent = crewSize===1?'person':'persons'; updateFanTotal(); document.getElementById('results').style.display = 'none';
 });
 document.getElementById('miles-input').addEventListener('input', function() {
-  miles = parseFloat(this.value) || 0; overrides = {}; document.getElementById('results').style.display = 'none';
+  miles = Math.max(0,parseFloat(this.value) || 0); document.getElementById('results').style.display = 'none';
 });
 
 // Editable values
@@ -850,7 +862,7 @@ function makeEditable(key, base) {
 function addLine(container, key, label, detail, base, color) {
   var row = document.createElement('div'); row.className = 'line-item';
   var left = document.createElement('div'); left.style.flex = '1';
-  left.innerHTML = '<div class="li-label" style="color:' + (color||'#e8dcc8') + '">' + label + '</div><div class="li-detail">' + detail + '</div>';
+  left.innerHTML = '<div class="li-label" style="color:' + (color||'#e8dcc8') + '">' + escAttr(label) + '</div><div class="li-detail">' + escAttr(detail) + '</div>';
   row.appendChild(left);
   row.appendChild(makeEditable(key, base));
   container.appendChild(row);
@@ -870,7 +882,7 @@ function recalc() {
   });
   for (var c = 0; c < customFans.length; c++) {
     var cf = customFans[c];
-    if ((cf.qty||0) > 0) laborTotal += ov('labor_custom_' + c, (cf.qty||0) * (cf.labor||0));
+    if ((cf.qty||0) > 0) laborTotal += ov('labor_custom_' + cf.id, (cf.qty||0) * (cf.labor||0));
   }
 
   var steelRate = steelMode==='standard'?150:steelMode==='double'?400:0;
@@ -903,10 +915,10 @@ function recalc() {
     ov('mileage', mileCost);
   for (var cj = 0; cj < customFans.length; cj++) {
     var cfj = customFans[cj];
-    if ((cfj.qty||0) > 0 && (cfj.material||0) > 0) costTotal += ov('mat_custom_'+cj, (cfj.qty||0)*(cfj.material||0));
+    if ((cfj.qty||0) > 0 && (cfj.material||0) > 0) costTotal += ov('mat_custom_'+cfj.id, (cfj.qty||0)*(cfj.material||0));
   }
   for (var mz = 0; mz < miscCosts.length; mz++) {
-    if ((miscCosts[mz].amount||0) > 0) costTotal += ov('misc_'+mz, miscCosts[mz].amount);
+    if ((miscCosts[mz].amount||0) > 0) costTotal += ov('misc_'+miscCosts[mz].id, miscCosts[mz].amount);
   }
 
   var combined = laborTotal + costTotal;
@@ -917,7 +929,13 @@ function recalc() {
   document.getElementById('t-costs').textContent = fmt(costTotal);
   document.getElementById('t-combined').textContent = fmt(combined);
   document.getElementById('t-margin').textContent = '+' + fmt(margin);
-  document.getElementById('t-quote').textContent = fmt(suggested);
+  var missing=missingRates();
+  document.getElementById('t-quote').textContent = missing.length ? 'Incomplete' : fmt(suggested);
+  document.getElementById('print-btn').disabled=missing.length>0;
+  var flag=document.getElementById('rateIssues');
+  flag.textContent=missing.length?'Rate missing: '+missing.join('; ')+'. Set rates before exporting.':'30% margin · 42.9% markup. Internal pricing check.'+(Object.keys(overrides).length?' Manual line overrides are retained. Review them after scope changes.':'');
+  flag.className=missing.length?'rate-issues':'rate-ok';
+  document.getElementById('scheduleSummary').textContent=wd+' workdays · '+days+' rental days · '+Math.max(0,days-1)+' hotel nights per person';
 }
 
 // Render results
@@ -941,7 +959,7 @@ function renderResults() {
   document.getElementById('res-fans').textContent = parts.join(', ');
   var cityEl = document.getElementById('res-city');
   cityEl.innerHTML = locationInfo
-    ? '<span style="color:#6b7280;font-family:\'Barlow\',sans-serif">📍 ' + locationInfo.city + ', ' + locationInfo.state + ' &nbsp;</span><span style="color:' + td.color + '">' + td.label + (locationInfo.hotel && !manualTier ? ' · $' + locationInfo.hotel + '/night' : '') + '</span>'
+    ? '<span style="color:#6b7280;font-family:\'Barlow\',sans-serif">📍 ' + escAttr(locationInfo.city) + ', ' + escAttr(locationInfo.state) + ' &nbsp;</span><span style="color:' + td.color + '">' + td.label + (locationInfo.hotel && !manualTier ? ' · $' + locationInfo.hotel + '/night' : '') + '</span>'
     : '<span style="color:' + td.color + '">' + td.label + ' Market</span>';
 
   // Labor
@@ -954,7 +972,7 @@ function renderResults() {
   });
   for (var cfi = 0; cfi < customFans.length; cfi++) {
     var cfc = customFans[cfi];
-    if ((cfc.qty||0) > 0) addLine(laborDiv, 'labor_custom_'+cfi, cfc.name||'Custom Fan '+(cfi+1), cfc.qty+' fan'+(cfc.qty!==1?'s':'')+' x '+fmt(cfc.labor||0), (cfc.qty||0)*(cfc.labor||0), null);
+    if ((cfc.qty||0) > 0) addLine(laborDiv, 'labor_custom_'+cfc.id, cfc.name||'Custom Fan '+(cfi+1), cfc.qty+' fan'+(cfc.qty!==1?'s':'')+' x '+fmt(cfc.labor||0), (cfc.qty||0)*(cfc.labor||0), null);
   }
 
   // Costs
@@ -976,7 +994,7 @@ function renderResults() {
   var costDiv = document.getElementById('res-costs'); costDiv.innerHTML = '';
   if (steelMode!=='none' && nonTaz>0) addLine(costDiv,'steel','Steel Angle Iron', nonTaz+' fan'+(nonTaz!==1?'s':'')+' x $'+steelRate+(steelMode==='double'?' (4 pieces)':' (2 pieces)'), steelCost, steelMode==='double'?'#fb923c':null);
   if (taz > 0) addLine(costDiv,'taz_hw','TAZ Chain & Hardware', taz+' fan'+(taz!==1?'s':'')+' x $170 (chain+links+eyebolts)', tazHw, '#f59e0b');
-  if (elecFans > 0) addLine(costDiv,'elec','Electrical Material', elecFans+' fan'+(elecFans!==1?'s':'')+' x $700', elecCost, null);
+  if (elecFans > 0) addLine(costDiv,'elec','Electrical Material Allowance', elecFans+' fan'+(elecFans!==1?'s':'')+' x $700', elecCost, null);
   if (breakerQty > 0 && breakerCost > 0) addLine(costDiv,'breakers','Electrical Breakers', breakerQty+' breaker'+(breakerQty!==1?'s':'')+' x $'+breakerCost, breakerTotal, null);
   addLine(costDiv,'lift','Scissor Lift Rental', days+' days x $250/day', liftCost, null);
   if (travelMode==='fly') addLine(costDiv,'car','Rental Car', days+' days x $'+td.car+'/day', carCost, td.color);
@@ -988,15 +1006,15 @@ function renderResults() {
   if (travelMode==='drive') addLine(costDiv,'mileage','Mileage',miles+' mi x 2 (RT) x $0.67',mileCost,null);
   for (var mci = 0; mci < customFans.length; mci++) {
     var mcf = customFans[mci];
-    if ((mcf.qty||0)>0 && (mcf.material||0)>0) addLine(costDiv,'mat_custom_'+mci,(mcf.name||'Custom Fan '+(mci+1))+' Materials',mcf.qty+' fan'+(mcf.qty!==1?'s':'')+' x '+fmt(mcf.material||0),(mcf.qty||0)*(mcf.material||0),'#a78bfa');
+    if ((mcf.qty||0)>0 && (mcf.material||0)>0) addLine(costDiv,'mat_custom_'+mcf.id,(mcf.name||'Custom Fan '+(mci+1))+' Materials',mcf.qty+' fan'+(mcf.qty!==1?'s':'')+' x '+fmt(mcf.material||0),(mcf.qty||0)*(mcf.material||0),'#a78bfa');
   }
 
   for (var mx = 0; mx < miscCosts.length; mx++) {
     var mc = miscCosts[mx];
-    if ((mc.amount||0) > 0) addLine(costDiv,'misc_'+mx, mc.name || 'Miscellaneous', 'Misc cost', mc.amount, null);
+    if ((mc.amount||0) > 0) addLine(costDiv,'misc_'+mc.id, mc.name || 'Miscellaneous', 'Misc cost', mc.amount, null);
   }
 
-  document.getElementById('reset-edits-row').style.display = 'none';
+  document.getElementById('reset-edits-row').style.display = Object.keys(overrides).length?'block':'none';
   recalc();
 
   var res = document.getElementById('results');
@@ -1064,7 +1082,7 @@ function resetAll() {
 
 document.getElementById('calc-btn').addEventListener('click', function() {
   if (totalFans() === 0) { alert('Please add at least one fan.'); return; }
-  overrides = {};
+  if(!missingRates().length) FGTStore.setItem('fg_estimate_rates_v2',JSON.stringify(FGT.rates()));
   renderResults();
 });
 
@@ -1072,6 +1090,7 @@ document.getElementById('reset-edits').addEventListener('click', function() { ov
 document.getElementById('new-btn').addEventListener('click', resetAll);
 document.getElementById('print-btn').addEventListener('click', function() { if (window.FGTEstimatePDF) FGTEstimatePDF.save(); else window.print(); });
 
+document.getElementById('refreshRates').onclick=function(){if(!confirm('Replace this job’s labor-rate snapshot with current default rates?'))return; FGTStore.removeItem('fg_estimate_rates_v2');location.reload();};
 // Init
 buildFanGrid();
 buildCustomFans();
@@ -1090,13 +1109,13 @@ function buildMisc() {
     row.querySelector('.mc-name').value = m.name || '';
     row.querySelector('.mc-amt').value = m.amount || '';
     row.querySelector('.mc-name').addEventListener('input', function () { miscCosts[i].name = this.value.trim(); document.getElementById('results').style.display = 'none'; });
-    row.querySelector('.mc-amt').addEventListener('input', function () { miscCosts[i].amount = parseFloat(this.value) || 0; delete overrides['misc_'+i]; document.getElementById('results').style.display = 'none'; });
-    row.querySelector('.misc-x').addEventListener('click', function () { miscCosts.splice(i, 1); overrides = {}; buildMisc(); document.getElementById('results').style.display = 'none'; });
+    row.querySelector('.mc-amt').addEventListener('input', function () { miscCosts[i].amount = parseFloat(this.value) || 0; delete overrides['misc_'+m.id]; document.getElementById('results').style.display = 'none'; });
+    row.querySelector('.misc-x').addEventListener('click', function () { delete overrides['misc_'+m.id]; miscCosts.splice(i, 1); buildMisc(); document.getElementById('results').style.display = 'none'; });
     list.appendChild(row);
   });
 }
 document.getElementById('add-misc-btn').addEventListener('click', function () {
-  miscCosts.push({ name: '', amount: 0 }); buildMisc();
+  miscCosts.push({ id:FGTStore.uid(), name: '', amount: 0 }); buildMisc();
   var names = document.querySelectorAll('#misc-list .mc-name'); if (names.length) names[names.length - 1].focus();
 });
 </script>
@@ -1106,7 +1125,7 @@ document.getElementById('add-misc-btn').addEventListener('click', function () {
   var KEY = 'fg_estimator_autosave_v1';
   function snapshot() {
     return {
-      installType: installType, qtyByType: qtyByType, miscCosts: miscCosts, customFans: customFans, steelMode: steelMode,
+      overrides: overrides, installType: installType, qtyByType: qtyByType, miscCosts: miscCosts, customFans: customFans, steelMode: steelMode,
       crewSize: crewSize, travelMode: travelMode, miles: miles, breakerQty: breakerQty,
       breakerCost: breakerCost, manualTier: manualTier, locationInfo: locationInfo,
       zip: document.getElementById('zip').value,
@@ -1118,15 +1137,16 @@ document.getElementById('add-misc-btn').addEventListener('click', function () {
   var timer = null;
   function save() {
     clearTimeout(timer);
-    timer = setTimeout(function() { try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {} }, 300);
+    timer = setTimeout(function() { try { FGTStore.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {} }, 300);
   }
   function setPill(groupId, val) {
     var btns = document.querySelectorAll('#' + groupId + ' .pill-btn');
     for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-val') === val);
   }
   function restore() {
-    var d; try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { return; }
+    var d; try { d = JSON.parse(FGTStore.getItem(KEY)); } catch (e) { return; }
     if (!d) return;
+    overrides = d.overrides && typeof d.overrides==='object' ? d.overrides : {};
     installType = d.installType || 'turnkey';
     if (d.qtyByType) {
       TYPES.forEach(function (t) { qtyByType[t] = Object.assign(emptyQtys(), d.qtyByType[t] || {}); });
@@ -1134,9 +1154,10 @@ document.getElementById('add-misc-btn').addEventListener('click', function () {
       qtyByType[installType] = Object.assign(emptyQtys(), d.fanQtys);
     }
     fanQtys = qtyByType[installType];
-    miscCosts = Array.isArray(d.miscCosts) ? d.miscCosts : [];
+    miscCosts = Array.isArray(d.miscCosts) ? d.miscCosts : [];miscCosts.forEach(function(m,i){if(!m.id){m.id=FGTStore.uid();if(Object.prototype.hasOwnProperty.call(overrides,'misc_'+i)){overrides['misc_'+m.id]=overrides['misc_'+i];delete overrides['misc_'+i];}}});
     buildMisc();
     customFans = Array.isArray(d.customFans) ? d.customFans : [];
+    customFans.forEach(function(cf,i){if(!cf.id){cf.id=FGTStore.uid(); ['labor_custom_','mat_custom_'].forEach(function(pre){if(Object.prototype.hasOwnProperty.call(overrides,pre+i)){overrides[pre+cf.id]=overrides[pre+i];delete overrides[pre+i];}});}});
     steelMode = d.steelMode || 'none';
     crewSize = d.crewSize || 1;
     travelMode = d.travelMode || 'fly';
@@ -1160,7 +1181,7 @@ document.getElementById('add-misc-btn').addEventListener('click', function () {
     document.getElementById('crew-unit').textContent = crewSize === 1 ? 'person' : 'persons';
     if (locationInfo) {
       var td = getTierData();
-      document.getElementById('zip-feedback').innerHTML = '<span style="color:' + td.color + '">📍 ' + locationInfo.city + ', ' + locationInfo.state + '</span>';
+      document.getElementById('zip-feedback').innerHTML = '<span style="color:' + td.color + '">📍 ' + escAttr(locationInfo.city) + ', ' + escAttr(locationInfo.state) + '</span>';
     }
     buildFanGrid(); buildCustomFans(); buildTierGrid(); updateTierNote(); updateBreakerNote(); updateFanTotal();
   }
@@ -1168,7 +1189,7 @@ document.getElementById('add-misc-btn').addEventListener('click', function () {
   document.addEventListener('input', save, true);
   document.addEventListener('change', save, true);
   document.addEventListener('click', save, true);
-  window.addEventListener('pagehide', function() { try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {} });
+  window.addEventListener('pagehide', function() { try { FGTStore.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {} });
 })();
 </script>
 </body>

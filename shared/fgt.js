@@ -5,8 +5,8 @@
 (function () {
   var TOOL = (document.currentScript && document.currentScript.getAttribute('data-tool')) || '';
 
-  function get(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
-  function set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function get(k, d) { try { var v = FGTStore.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function set(k, v) { try { FGTStore.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
   function currentJob() {
     var id = get('fgt-current', null), jobs = get('fgt-jobs', []);
@@ -21,7 +21,7 @@
   /* ---------- Labor rates ---------- */
   var RATE_MODELS = ['ztech', 'zchill', 'taz', 'taz36'];
   var RATE_TYPES = ['turnkey', 'mech_hook', 'mech_hang'];
-  function rates() { return get('fgt-rates', null); }
+  function rates() { return get('fg_estimate_rates_v2',null)||get('fgt-rates', null); }
   function applyRates(models) {
     var r = rates() || {};
     models.forEach(function (m) {
@@ -113,7 +113,7 @@
   }
 
   function ready() {
-    homeButton();
+    // Navigation is provided by the shared workspace shell.
     setTimeout(prefill, 700);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();

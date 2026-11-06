@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="../icon-192.png">
+<script src="../shared/store.js"></script>
 <script src="../shared/fgt.js" data-tool="tech"></script>
   <meta charset="UTF-8"/>
   <script>
@@ -17,18 +19,18 @@
       }
     });
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, "/>
   <meta name="theme-color" content="#111111"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
   <title>Fan Guys Tech Pro</title>
   <!-- Load React first, then Babel, defer everything to not block page render -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="../shared/vendor/react.min.js"></script>
+  <script src="../shared/vendor/react-dom.min.js"></script>
+  <script src="../shared/vendor/babel.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:#F3F4F6;font-family:'Nunito',sans-serif;}
+    body{background:#F3F4F6;font-family:'Field Sans',Arial,sans-serif;}
     #root{min-height:100vh;}
     #loading{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#111;flex-direction:column;gap:16px;}
     #loading svg{animation:spin 3s linear infinite;transform-origin:50% 50%;}
@@ -36,6 +38,8 @@
     #loading p{color:#aaa;font-family:sans-serif;font-size:14px;letter-spacing:0.1em;}
     #loading h2{color:#fff;font-family:sans-serif;font-size:20px;font-weight:900;}
   </style>
+<link rel="stylesheet" href="../shared/workspace.css">
+<script src="../shared/workspace.js" defer></script>
 </head>
 <body>
   <div id="loading">
@@ -59,9 +63,9 @@
 // THEME
 // ─────────────────────────────────────────────────────────────────────────────
 const T = {
-  bg:"#F3F4F6", surface:"#FFF", border:"#E5E7EB", borderDk:"#9CA3AF",
-  text:"#111827", textMid:"#374151", textSub:"#6B7280",
-  accent:"#1D4ED8", accentLt:"#EFF6FF", accentBd:"#BFDBFE",
+  bg:"var(--ws-bg)", surface:"var(--ws-panel)", border:"var(--ws-line)", borderDk:"#9CA3AF",
+  text:"var(--ws-text)", textMid:"var(--ws-text)", textSub:"var(--ws-muted)",
+  accent:"var(--ws-accent)", accentLt:"var(--ws-soft)", accentBd:"var(--ws-line)",
   green:"#15803D", greenBg:"#F0FDF4", greenBd:"#86EFAC",
   orange:"#C2410C", orangeBg:"#FFF7ED", orangeBd:"#FDBA74",
   red:"#B91C1C", redBg:"#FEF2F2", redBd:"#FCA5A5",
@@ -1706,7 +1710,7 @@ function ManualBtn({ href, label }) {
 const INP = (extra={}) => ({
   width:"100%", boxSizing:"border-box", padding:"9px 11px",
   background:T.surface, border:`1.5px solid ${T.border}`, borderRadius:8,
-  fontSize:14, color:T.text, fontFamily:"'Nunito',sans-serif", outline:"none",
+  fontSize:14, color:T.text, fontFamily:"'Field Sans',Arial,sans-serif", outline:"none",
   ...extra,
 });
 
@@ -1737,7 +1741,7 @@ function ParamsTable({ params, brand, bdata, motor, brands, factoryMeta }) {
       )}
       {params.map((row,i)=>(
         <div key={i} style={{marginBottom:4}}>
-          <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",padding:"9px 10px",borderRadius:row.flag?"8px 8px 0 0":8,background:i%2===0?T.bg:"#fff",border:`1px solid ${T.border}`,borderLeft:row.flag?`3px solid ${row.flag==="red"?T.red:"#D97706"}`:`1px solid ${T.border}`}}>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",padding:"9px 10px",borderRadius:row.flag?"8px 8px 0 0":8,background:i%2===0?T.bg:T.surface,border:`1px solid ${T.border}`,borderLeft:row.flag?`3px solid ${row.flag==="red"?T.red:"#D97706"}`:`1px solid ${T.border}`}}>
             <div style={{flex:"0 0 100px",fontWeight:800,fontSize:12,color:T.accent,fontFamily:"monospace"}}>{row.p}</div>
             <div style={{background:row.flag==="red"?"#7F1D1D":"#111",color:"#fff",borderRadius:6,padding:"3px 12px",fontWeight:900,fontSize:13,flexShrink:0}}>{row.v}</div>
             <div style={{flex:"1 1 140px",color:T.textSub,fontSize:12}}>{row.r}</div>
@@ -1865,7 +1869,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
 
   const sectionBtn = (key, label) => (
     <button onClick={()=>setSettingsTab(key)}
-      style={{padding:"7px 14px",background:settingsTab===key?T.accent:T.surface,border:`1.5px solid ${settingsTab===key?T.accent:T.border}`,borderRadius:20,color:settingsTab===key?"#fff":T.textSub,fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>
+      style={{padding:"7px 14px",background:settingsTab===key?T.accent:T.surface,border:`1.5px solid ${settingsTab===key?T.accent:T.border}`,borderRadius:20,color:settingsTab===key?"#fff":T.textSub,fontFamily:"'Field Sans',Arial,sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>
       {label}
     </button>
   );
@@ -1878,11 +1882,11 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
           <div style={{color:"#fff",fontWeight:900,fontSize:16}}>⚙ Settings</div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>{ if(confirm("Reset ALL data to factory defaults? This cannot be undone.")) onReset(); }}
-              style={{padding:"6px 14px",background:"#B91C1C",border:"none",borderRadius:6,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Reset to Default</button>
+              style={{padding:"6px 14px",background:"#B91C1C",border:"none",borderRadius:6,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Reset to Default</button>
             <button onClick={()=>onSave(edited)}
-              style={{padding:"6px 14px",background:T.green,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>💾 Save</button>
+              style={{padding:"6px 14px",background:T.green,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>💾 Save</button>
             <button onClick={onClose}
-              style={{padding:"6px 14px",background:"#444",border:"none",borderRadius:6,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>✕ Close</button>
+              style={{padding:"6px 14px",background:"#444",border:"none",borderRadius:6,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>✕ Close</button>
           </div>
         </div>
 
@@ -1904,19 +1908,19 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
             {Object.keys(edited).map(name => (
               <div key={name} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:activeBrand===name?T.accentLt:T.bg,border:`1.5px solid ${activeBrand===name?T.accent:T.border}`,borderRadius:8,marginBottom:6}}>
                 <button onClick={()=>{setActiveBrand(name);setSettingsTab("info");}}
-                  style={{flex:1,textAlign:"left",background:"none",border:"none",cursor:"pointer",fontFamily:"'Nunito',sans-serif",fontWeight:activeBrand===name?800:600,fontSize:13,color:activeBrand===name?T.accent:T.text}}>
+                  style={{flex:1,textAlign:"left",background:"none",border:"none",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:activeBrand===name?800:600,fontSize:13,color:activeBrand===name?T.accent:T.text}}>
                   {name}
                   <span style={{fontSize:11,color:T.textSub,marginLeft:8}}>{edited[name].vfd}</span>
                 </button>
                 <button onClick={()=>removeBrand(name)}
-                  style={{padding:"4px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>Remove</button>
+                  style={{padding:"4px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>Remove</button>
               </div>
             ))}
             <div style={{marginTop:16,padding:"12px",background:T.greenBg,border:`1px solid ${T.greenBd}`,borderRadius:10}}>
               <div style={{fontWeight:800,fontSize:13,color:T.green,marginBottom:8}}>➕ Add New Manufacturer</div>
               <div style={{display:"flex",gap:8}}>
                 <input value={newBrandName} onChange={e=>setNewBrandName(e.target.value)} placeholder="e.g. MacroAir" style={{...SINP(),flex:1}}/>
-                <button onClick={addBrand} style={{padding:"7px 16px",background:T.green,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Add</button>
+                <button onClick={addBrand} style={{padding:"7px 16px",background:T.green,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Add</button>
               </div>
               <div style={{fontSize:11,color:T.textSub,marginTop:6}}>After adding, go to Brand Info, Models, Faults, and Field Notes to fill in all details.</div>
             </div>
@@ -1963,11 +1967,11 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                 <div key={i} style={{display:"flex",gap:6,marginBottom:6,alignItems:"center"}}>
                   <input value={link.label} onChange={e=>{const ml=[...b.manualLinks];ml[i]={...ml[i],label:e.target.value};updateBrandField("manualLinks",ml);}} placeholder="Label" style={{...SINP(),flex:"0 0 140px"}}/>
                   <input value={link.url} onChange={e=>{const ml=[...b.manualLinks];ml[i]={...ml[i],url:e.target.value};updateBrandField("manualLinks",ml);}} placeholder="URL" style={{...SINP(),flex:1}}/>
-                  <button onClick={()=>updateBrandField("manualLinks",(b.manualLinks||[]).filter((_,idx)=>idx!==i))} style={{padding:"6px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>✕</button>
+                  <button onClick={()=>updateBrandField("manualLinks",(b.manualLinks||[]).filter((_,idx)=>idx!==i))} style={{padding:"6px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>✕</button>
                 </div>
               ))}
               <button onClick={()=>updateBrandField("manualLinks",[...(b.manualLinks||[]),{label:"",url:""}])}
-                style={{padding:"6px 14px",background:T.accentLt,border:`1px solid ${T.accentBd}`,borderRadius:6,color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>+ Add Link</button>
+                style={{padding:"6px 14px",background:T.accentLt,border:`1px solid ${T.accentBd}`,borderRadius:6,color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>+ Add Link</button>
             </div>
           </div>}
 
@@ -1979,7 +1983,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                 <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:expandedModel===i?T.accentLt:T.bg,cursor:"pointer"}} onClick={()=>setExpandedModel(expandedModel===i?null:i)}>
                   <span style={{flex:1,fontWeight:700,fontSize:13,color:T.text}}>{m.name}</span>
                   <span style={{fontSize:12,color:T.textSub}}>{m.hp}HP · {m.circuit}</span>
-                  <button onClick={e=>{e.stopPropagation();removeModel(i);}} style={{padding:"3px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>Remove</button>
+                  <button onClick={e=>{e.stopPropagation();removeModel(i);}} style={{padding:"3px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>Remove</button>
                 </div>
                 {expandedModel===i && (
                   <div style={{padding:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -1993,7 +1997,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                 )}
               </div>
             ))}
-            <button onClick={addModel} style={{width:"100%",padding:"10px",background:T.greenBg,border:`1.5px solid ${T.greenBd}`,borderRadius:8,color:T.green,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>+ Add Model</button>
+            <button onClick={addModel} style={{width:"100%",padding:"10px",background:T.greenBg,border:`1.5px solid ${T.greenBd}`,borderRadius:8,color:T.green,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>+ Add Model</button>
           </div>}
 
           {/* FAULTS tab */}
@@ -2005,7 +2009,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                   <span style={{fontFamily:"monospace",fontWeight:900,fontSize:12,color:T.orange,minWidth:50}}>{f.display}</span>
                   <span style={{flex:1,fontSize:12,color:T.textMid}}>{f.label}</span>
                   <SevBadge sev={f.sev}/>
-                  <button onClick={e=>{e.stopPropagation();removeFault(i);}} style={{padding:"3px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>Remove</button>
+                  <button onClick={e=>{e.stopPropagation();removeFault(i);}} style={{padding:"3px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>Remove</button>
                 </div>
                 {expandedFault===i && (
                   <div style={{padding:12}}>
@@ -2035,7 +2039,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                 )}
               </div>
             ))}
-            <button onClick={addFault} style={{width:"100%",padding:"10px",background:T.yellowBg,border:`1.5px solid ${T.yellowBd}`,borderRadius:8,color:T.yellow,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>+ Add Fault Code</button>
+            <button onClick={addFault} style={{width:"100%",padding:"10px",background:T.yellowBg,border:`1.5px solid ${T.yellowBd}`,borderRadius:8,color:T.yellow,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>+ Add Fault Code</button>
           </div>}
 
           {/* FIELD NOTES tab */}
@@ -2067,10 +2071,10 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                         <input value={s.param||""} onChange={e=>updateNoteStep(ni,si,"param",e.target.value)} placeholder="Param" style={SINP()}/>
                         <input value={s.value||""} onChange={e=>updateNoteStep(ni,si,"value",e.target.value)} placeholder="Value" style={SINP()}/>
                         <input value={s.note||""} onChange={e=>updateNoteStep(ni,si,"note",e.target.value)} placeholder="Note/description" style={SINP()}/>
-                        <button onClick={()=>removeNoteStep(ni,si)} style={{padding:"6px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,cursor:"pointer"}}>✕</button>
+                        <button onClick={()=>removeNoteStep(ni,si)} style={{padding:"6px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,cursor:"pointer"}}>✕</button>
                       </div>
                     ))}
-                    <button onClick={()=>addNoteStep(ni)} style={{padding:"5px 12px",background:T.accentLt,border:`1px solid ${T.accentBd}`,borderRadius:6,color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:11,cursor:"pointer",marginBottom:10}}>+ Add Step</button>
+                    <button onClick={()=>addNoteStep(ni)} style={{padding:"5px 12px",background:T.accentLt,border:`1px solid ${T.accentBd}`,borderRadius:6,color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:700,fontSize:11,cursor:"pointer",marginBottom:10}}>+ Add Step</button>
                     <div>
                       <label style={{fontSize:10,fontWeight:700,color:T.textSub,display:"block",marginBottom:3}}>FOOTER NOTE (optional)</label>
                       <textarea value={n.footer||""} onChange={e=>updateNote(ni,"footer",e.target.value)} rows={2} style={{...SINP(),resize:"vertical"}}/>
@@ -2098,7 +2102,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                     placeholder="Enter password"
                     style={{...SINP(),width:160,textAlign:"center",fontSize:16,letterSpacing:"0.2em"}}/>
                   <button onClick={()=>{if(paramPassword==="439"){setParamUnlocked(true);setParamError(false);}else setParamError(true);}}
-                    style={{padding:"7px 16px",background:T.accent,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:800,cursor:"pointer"}}>Unlock</button>
+                    style={{padding:"7px 16px",background:T.accent,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,cursor:"pointer"}}>Unlock</button>
                 </div>
                 {paramError && <div style={{color:T.red,fontSize:12,fontWeight:700}}>⚠ Incorrect password</div>}
                 <div style={{marginTop:16,fontSize:11,color:T.textSub}}>Hint: same as the GFY VFD unlock code (P-14)</div>
@@ -2109,7 +2113,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                 <div style={{background:T.greenBg,border:`1px solid ${T.greenBd}`,borderRadius:8,padding:"8px 12px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <span style={{color:T.green,fontWeight:800,fontSize:12}}>🔓 Parameter editor unlocked</span>
                   <button onClick={()=>{setParamUnlocked(false);setParamPassword("");}}
-                    style={{padding:"4px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>🔒 Lock</button>
+                    style={{padding:"4px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>🔒 Lock</button>
                 </div>
 
                 {/* Warning */}
@@ -2149,7 +2153,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                         </div>
                         {overrides.length>0 && (
                           <button onClick={()=>{ if(confirm("Clear all custom parameters? Auto-generated values will be used instead.")) setOverrides([]);}}
-                            style={{padding:"4px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>
+                            style={{padding:"4px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>
                             Clear All
                           </button>
                         )}
@@ -2180,14 +2184,14 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                                 placeholder="Why this value / what it does"
                                 style={{...SINP(),padding:"6px 8px"}}/>
                               <button onClick={()=>removeRow(i)}
-                                style={{width:32,height:32,background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:900,cursor:"pointer",fontSize:14}}>✕</button>
+                                style={{width:32,height:32,background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,cursor:"pointer",fontSize:14}}>✕</button>
                             </div>
                           ))}
                         </div>
                       )}
 
                       <button onClick={addRow}
-                        style={{width:"100%",padding:"10px",background:T.accentLt,border:`1.5px solid ${T.accentBd}`,borderRadius:8,color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:12}}>
+                        style={{width:"100%",padding:"10px",background:T.accentLt,border:`1.5px solid ${T.accentBd}`,borderRadius:8,color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:12}}>
                         + Add Parameter Row
                       </button>
 
@@ -2203,7 +2207,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                             ))}
                           </div>
                           {(edited[activeBrand]?.models||[]).filter(m=>m.hp||m.fla460).map((m,i)=>(
-                            <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.8fr 0.8fr",gap:6,marginBottom:5,alignItems:"center",padding:"5px 6px",background:"#fff",borderRadius:6,border:`1px solid ${T.border}`}}>
+                            <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.8fr 0.8fr",gap:6,marginBottom:5,alignItems:"center",padding:"5px 6px",background:"var(--ws-panel)",borderRadius:6,border:`1px solid ${T.border}`}}>
                               <div style={{fontSize:10,fontWeight:700,color:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2}}>{m.name}</div>
                               <input type="number" step="0.1" value={m.hp||""}
                                 onChange={e=>{const models=[...(edited[activeBrand]?.models||[])];models[i]={...models[i],hp:parseFloat(e.target.value)||0};setEdited(p=>({...p,[activeBrand]:{...p[activeBrand],models}}));}}
@@ -2242,7 +2246,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
                 <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:expandedVideo===i?T.purpleBg:T.bg,cursor:"pointer"}} onClick={()=>setExpandedVideo(expandedVideo===i?null:i)}>
                   <span style={{flex:1,fontWeight:700,fontSize:13,color:T.text}}>▶ {v.label||"Untitled video"}</span>
                   <button onClick={e=>{e.stopPropagation();const vids=(edited[activeBrand]?.videos||[]).filter((_,idx)=>idx!==i);setEdited(p=>({...p,[activeBrand]:{...p[activeBrand],videos:vids}}));setExpandedVideo(null);}}
-                    style={{padding:"3px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>Remove</button>
+                    style={{padding:"3px 8px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:4,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>Remove</button>
                 </div>
                 {expandedVideo===i && (
                   <div style={{padding:12}}>
@@ -2257,7 +2261,7 @@ function SettingsPanel({ brands, onSave, onClose, onReset }) {
               </div>
             ))}
             <button onClick={()=>{const vids=[...(edited[activeBrand]?.videos||[]),{label:"New Video",url:"https://youtube.com/watch?v=",desc:""}];setEdited(p=>({...p,[activeBrand]:{...p[activeBrand],videos:vids}}));setExpandedVideo(vids.length-1);}}
-              style={{width:"100%",padding:"10px",background:T.purpleBg,border:`1.5px solid ${T.purpleBd}`,borderRadius:8,color:T.purple,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>+ Add Video Link</button>
+              style={{width:"100%",padding:"10px",background:T.purpleBg,border:`1.5px solid ${T.purpleBd}`,borderRadius:8,color:T.purple,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>+ Add Video Link</button>
           </div>}
 
         </div>
@@ -2285,7 +2289,7 @@ function BrandPageSection({ title, icon, count, defaultOpen, children, sub, them
                 gap:10,cursor:"pointer",textAlign:"left",
                 borderLeft:`4px solid ${open?theme.primary:"transparent"}`,
                 transition:"border-left-color 0.15s",color:DT.text,
-                fontFamily:"'Nunito',sans-serif"}}>
+                fontFamily:"'Field Sans',Arial,sans-serif"}}>
         <div style={{fontSize:22,lineHeight:1,flexShrink:0}}>{icon}</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontWeight:900,fontSize:15,color:DT.text,
@@ -2352,7 +2356,7 @@ function BrandPageSevBadge({ sev }) {
   return (
     <span style={{background:c.bg, color:c.fg, fontSize:9.5, fontWeight:900,
                    padding:"2px 7px", borderRadius:4, letterSpacing:0.5,
-                   flexShrink:0, fontFamily:"'Nunito',sans-serif"}}>
+                   flexShrink:0, fontFamily:"'Field Sans',Arial,sans-serif"}}>
       {c.label}
     </span>
   );
@@ -2394,19 +2398,19 @@ function MotorSelector({ theme }) {
   const vBtn = (val, label) => (
     <button key={val} onClick={()=>setV(val)}
       style={{flex:1,background:v===val?PL:DT.bg,color:v===val?P:DT.textSub,border:`1px solid ${v===val?P:DT.borderLt}`,
-              borderRadius:8,padding:"10px 6px",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:14,cursor:"pointer"}}>{label}</button>
+              borderRadius:8,padding:"10px 6px",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:14,cursor:"pointer"}}>{label}</button>
   );
   const bBtn = (val, label, sub) => (
     <button key={val} onClick={()=>setBrandM(val)}
       style={{flex:1,background:brandM===val?PL:DT.bg,color:brandM===val?P:DT.textSub,border:`1px solid ${brandM===val?P:DT.borderLt}`,
-              borderRadius:8,padding:"10px 6px",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:14,cursor:"pointer",lineHeight:1.15}}>
+              borderRadius:8,padding:"10px 6px",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:14,cursor:"pointer",lineHeight:1.15}}>
       {label}<span style={{display:"block",fontSize:9.5,color:brandM===val?P:DT.textDim,fontWeight:700,marginTop:2}}>{sub}</span></button>
   );
   return (
     <div>
       <div style={{fontSize:10,fontWeight:800,color:P,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>Fan and size</div>
       <select value={fanKey} onChange={e=>setFanKey(e.target.value)}
-        style={{width:"100%",background:DT.bg,color:DT.text,border:`1px solid ${DT.borderLt}`,borderRadius:8,padding:"10px",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:14}}>
+        style={{width:"100%",background:DT.bg,color:DT.text,border:`1px solid ${DT.borderLt}`,borderRadius:8,padding:"10px",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:700,fontSize:14}}>
         {Object.keys(MOTOR_FANS).map(k=><option key={k} value={k}>{MOTOR_FANS[k].label} ({MOTOR_FANS[k].hp} HP)</option>)}
       </select>
       <div style={{fontSize:10,fontWeight:800,color:P,textTransform:"uppercase",letterSpacing:0.5,margin:"14px 0 4px"}}>Supply voltage</div>
@@ -2458,7 +2462,7 @@ function FactoryParams({ theme }) {
     <button key={key} onClick={() => pick(key)}
       style={{flex:1,background:drive===key?PL:DT.bg,color:drive===key?P:DT.textSub,
               border:`1px solid ${drive===key?P:DT.borderLt}`,borderRadius:8,padding:"9px 4px",
-              fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer",lineHeight:1.2}}>{label}</button>
+              fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer",lineHeight:1.2}}>{label}</button>
   );
   const groupDiv = (g, key) => (
     <div key={key} style={{fontSize:10.5,fontWeight:800,color:P,textTransform:"uppercase",
@@ -2502,7 +2506,7 @@ function FactoryParams({ theme }) {
       <div style={{fontSize:10,fontWeight:800,color:P,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>Fan / file</div>
       <select value={fi} onChange={e => { setFi(parseInt(e.target.value)); setQ(""); setAdv(false); }}
         style={{width:"100%",background:DT.bg,color:DT.text,border:`1px solid ${DT.borderLt}`,borderRadius:8,
-                padding:"9px 10px",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:13}}>
+                padding:"9px 10px",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:700,fontSize:13}}>
         {files.map((ff, i) => <option key={i} value={i}>{ff.opt}</option>)}
       </select>
       <div style={{background:DT.bg,border:`1px solid ${DT.border}`,borderRadius:8,padding:"9px 11px",margin:"10px 0"}}>
@@ -2514,7 +2518,7 @@ function FactoryParams({ theme }) {
       </div>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="🔍 Filter — P-number or word…"
         style={{width:"100%",background:DT.bg,color:DT.text,border:`1px solid ${DT.borderLt}`,borderRadius:8,
-                padding:"9px 11px",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:13,marginBottom:10}}/>
+                padding:"9px 11px",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:700,fontSize:13,marginBottom:10}}/>
       <div style={{fontSize:10.5,color:DT.textDim,fontWeight:700,marginBottom:8,lineHeight:1.4}}>
         <b style={{color:DT.red}}>RED</b> = motor conflict · <b style={{color:DT.orange}}>AMBER</b> = differs from app · <b>EXT</b> = sub-setting
       </div>
@@ -2523,7 +2527,7 @@ function FactoryParams({ theme }) {
         <div>
           <button onClick={() => setAdv(a => !a)}
             style={{width:"100%",marginTop:14,background:DT.blueBg,color:DT.blue,border:`1px solid ${DT.blueBd}`,
-                    borderRadius:8,padding:11,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12.5,
+                    borderRadius:8,padding:11,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12.5,
                     cursor:"pointer",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <span>⚙ Advanced parameters ({advRows.length}) — PID / pump / BACnet / I-O</span>
             <span>{adv ? "▲" : "▼"}</span>
@@ -2605,7 +2609,7 @@ function NavAccordion({ title, sub, icon, defaultOpen, accent, children }) {
   const bar = accent || GFYO;
   return (
     <div style={{background:DT.bg,border:`1px solid ${DT.border}`,borderRadius:10,marginBottom:8,overflow:"hidden"}}>
-      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",border:"none",background:"transparent",padding:"12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",textAlign:"left",borderLeft:`4px solid ${bar}`,color:DT.text,fontFamily:"'Nunito',sans-serif"}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",border:"none",background:"transparent",padding:"12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",textAlign:"left",borderLeft:`4px solid ${bar}`,color:DT.text,fontFamily:"'Field Sans',Arial,sans-serif"}}>
         <div style={{fontSize:18,flexShrink:0}}>{icon}</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontWeight:900,fontSize:14}}>{title}</div>
@@ -2641,7 +2645,7 @@ function BrandPage({ brandKey, brandData, theme, onBack, onJumpToFanSetup }) {
           <button onClick={onJumpToFanSetup}
             style={{background:"#1D4ED8", color:"#fff", border:"none",
                     borderRadius:8, padding:"11px 22px", fontSize:13,
-                    fontWeight:900, fontFamily:"'Nunito',sans-serif",
+                    fontWeight:900, fontFamily:"'Field Sans',Arial,sans-serif",
                     cursor:"pointer"}}>
             → Go to Fan Setup
           </button>
@@ -2699,13 +2703,13 @@ function BrandPage({ brandKey, brandData, theme, onBack, onJumpToFanSetup }) {
     border:`1.5px solid ${active ? theme.primary : DT.border}`,
     color: active ? fgOnPrimary : DT.textMid,
     borderRadius:14, fontSize:11, fontWeight:800,
-    cursor:"pointer", fontFamily:"'Nunito',sans-serif",
+    cursor:"pointer", fontFamily:"'Field Sans',Arial,sans-serif",
   });
 
   return (
     <div style={{background:DT.bg, minHeight:"100vh",
                   margin:"-14px -14px -14px -14px",
-                  color:DT.text, fontFamily:"'Nunito',sans-serif"}}>
+                  color:DT.text, fontFamily:"'Field Sans',Arial,sans-serif"}}>
       {/* Back bar */}
       <div style={{background:DT.surface,
                     borderBottom:`1px solid ${DT.border}`,
@@ -2715,7 +2719,7 @@ function BrandPage({ brandKey, brandData, theme, onBack, onJumpToFanSetup }) {
           style={{background:"transparent", color:DT.text,
                   border:`1px solid ${DT.borderLt}`, borderRadius:8,
                   padding:"6px 12px", fontSize:12, fontWeight:800,
-                  cursor:"pointer", fontFamily:"'Nunito',sans-serif"}}>
+                  cursor:"pointer", fontFamily:"'Field Sans',Arial,sans-serif"}}>
           ← Back to Fan Setup
         </button>
         <div style={{fontSize:10.5, fontWeight:700,
@@ -2894,7 +2898,7 @@ function BrandPage({ brandKey, brandData, theme, onBack, onJumpToFanSetup }) {
                 value={faultSearch} onChange={e=>setFaultSearch(e.target.value)}
                 style={{width:"100%", padding:"9px 11px", borderRadius:7,
                         border:`1.5px solid ${DT.border}`, fontSize:13,
-                        fontFamily:"'Nunito',sans-serif",
+                        fontFamily:"'Field Sans',Arial,sans-serif",
                         background:DT.surfaceLt, color:DT.text,
                         marginBottom:8}}/>
               <div style={{display:"flex", flexDirection:"column", gap:5}}>
@@ -2910,7 +2914,7 @@ function BrandPage({ brandKey, brandData, theme, onBack, onJumpToFanSetup }) {
                                 padding:"9px 11px", display:"flex",
                                 alignItems:"center", gap:8, cursor:"pointer",
                                 textAlign:"left", color:DT.text,
-                                fontFamily:"'Nunito',sans-serif"}}>
+                                fontFamily:"'Field Sans',Arial,sans-serif"}}>
                         <div style={{background:"#000", color:theme.primary,
                                       fontFamily:"monospace", fontWeight:900,
                                       padding:"3px 8px", borderRadius:5,
@@ -3015,7 +3019,7 @@ function BrandPage({ brandKey, brandData, theme, onBack, onJumpToFanSetup }) {
                               padding:"9px 11px", display:"flex",
                               alignItems:"center", gap:8,
                               cursor:"pointer", textAlign:"left",
-                              fontFamily:"'Nunito',sans-serif"}}>
+                              fontFamily:"'Field Sans',Arial,sans-serif"}}>
                       <span style={{background:fc.badge,
                                      border:`1px solid ${fc.border}`,
                                      borderRadius:14, padding:"2px 10px",
@@ -3231,13 +3235,13 @@ const STORAGE_KEY = "fanGuysProData_v6";
 
 function App() {
   // ── State ──
-  // Always start from DEFAULT_BRANDS — never load from storage
+  // Restore user-edited technical content; defaults are used only for a fresh install.
   // Storage is only used by Settings panel for user-added customizations
-  const [brands, setBrands] = useState(() => JSON.parse(JSON.stringify(DEFAULT_BRANDS)));
+  const [brands, setBrands] = useState(() => {try{const saved=JSON.parse(FGTStore.getItem(STORAGE_KEY)||'null');if(saved&&typeof saved==='object'&&!Array.isArray(saved)&&Object.values(saved).every(b=>b&&typeof b==='object'))return saved;}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_BRANDS));});
   const [tab, setTab] = useState(0);
   const [openMenu, setOpenMenu] = useState(null); // dropdown nav: "diag" | "ref" | "tools" | null
   // VFD Param Capture (own storage key, walled off from brand data)
-  const [pcList, setPcList] = useState(() => { try { const r = localStorage.getItem("fanGuysParamCaptures"); return r ? JSON.parse(r) : []; } catch(e) { return []; } });
+  const [pcList, setPcList] = useState(() => { try { const r = FGTStore.getItem("fanGuysParamCaptures"); return r ? JSON.parse(r) : []; } catch(e) { return []; } });
   const [pcEditing, setPcEditing] = useState(null);
   const [pcCopied, setPcCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -3274,17 +3278,19 @@ function App() {
   const [checks, setChecks] = useState({});
 
   // Calculators
+  const [ohmError,setOhmError]=useState("");
   const [calcTab, setCalcTab] = useState(0);
   const [oV,setOV]=useState(""); const [oI,setOI]=useState(""); const [oR,setOR]=useState(""); const [oP,setOP]=useState("");
-  const [vdV,setVdV]=useState("480"); const [vdA,setVdA]=useState(""); const [vdFt,setVdFt]=useState(""); const [vdAwg,setVdAwg]=useState("12"); const [vdPh,setVdPh]=useState("3");
+  const [vdV,setVdV]=useState("480"); const [vdA,setVdA]=useState(""); const [vdFt,setVdFt]=useState(""); const [vdAwg,setVdAwg]=useState("12"); const [vdPh,setVdPh]=useState("3"); const [vdTemp,setVdTemp]=useState("75");
 
   // AI
   const GEMINI_KEY_STORAGE = "fanGuysGeminiKey";
   const [aiMsgs, setAiMsgs] = useState([{role:"assistant",content:"Hey — Fan Guys AI field tech here. Tell me your brand, model, and what's happening — fault code, wiring issue, or commissioning question. I'll walk you through it step by step."}]);
+  const [geminiModel,setGeminiModel]=useState(()=>{try{return FGTStore.getItem("fanGuysGeminiModel")||"gemini-3.8-flash";}catch(e){return "gemini-3.8-flash";}});
   const [aiIn, setAiIn] = useState("");
   const [aiLoad, setAiLoad] = useState(false);
   const [geminiKey, setGeminiKey] = useState(() => {
-    try { return localStorage.getItem(GEMINI_KEY_STORAGE) || ""; } catch { return ""; }
+    try { return FGTStore.getItem(GEMINI_KEY_STORAGE) || ""; } catch { return ""; }
   });
   const [geminiKeyInput, setGeminiKeyInput] = useState("");
   const [geminiKeyError, setGeminiKeyError] = useState("");
@@ -3295,18 +3301,12 @@ function App() {
   const saveData = useCallback((data) => {
     setBrands(data);
     try {
-      // Try persistent storage first, fall back to localStorage
-      if (window.storage?.set) {
-        window.storage.set(STORAGE_KEY, JSON.stringify(data));
-      } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
+      FGTStore.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch(e) { console.warn("Save failed:", e); }
     setShowSettings(false);
   }, []);
 
-  // Note: brands always load from DEFAULT_BRANDS above.
-  // Settings saves go to storage for the Settings panel only.
+  // Technical customizations are global and persist across reloads.
 
   useEffect(() => { chatEnd.current?.scrollIntoView({behavior:"smooth"}); }, [aiMsgs]);
   useEffect(() => {
@@ -3320,6 +3320,8 @@ function App() {
   // ── Ohm's Law ──
   function solveOhm(field) {
     const v=parseFloat(oV),i=parseFloat(oI),r=parseFloat(oR);
+    const valid=field==='V'?Number.isFinite(i)&&i>=0&&Number.isFinite(r)&&r>0:field==='I'?Number.isFinite(v)&&v>=0&&Number.isFinite(r)&&r>0:field==='R'?Number.isFinite(v)&&v>=0&&Number.isFinite(i)&&i>0:Number.isFinite(v)&&v>=0&&Number.isFinite(i)&&i>=0;
+    if(!valid){setOhmError('Enter finite, nonnegative values; division requires a positive current or resistance.');setOP('');return;}setOhmError('');
     if(field==="V"&&!isNaN(i)&&!isNaN(r)){setOV((i*r).toFixed(3));setOP((i*i*r).toFixed(2));}
     if(field==="I"&&!isNaN(v)&&!isNaN(r)){setOI((v/r).toFixed(3));setOP((v*v/r).toFixed(2));}
     if(field==="R"&&!isNaN(v)&&!isNaN(i)){setOR((v/i).toFixed(3));setOP((v*i).toFixed(2));}
@@ -3329,20 +3331,21 @@ function App() {
   // ── Voltage Drop ──
   function calcVD() {
     const v=parseFloat(vdV),a=parseFloat(vdA),ft=parseFloat(vdFt);
-    if(isNaN(v)||isNaN(a)||isNaN(ft)) return null;
+    if(!Number.isFinite(v)||!Number.isFinite(a)||!Number.isFinite(ft)||v<=0||a<0||ft<0) return null;
     const wire=AWG_DATA.find(w=>w.awg===vdAwg); if(!wire) return null;
-    const factor=vdPh==="3"?Math.sqrt(3)*2:2;
-    const drop=factor*(wire.ohm/100)*ft*a;
+    const factor=vdPh==="3"?Math.sqrt(3):2;
+    const drop=factor*(wire.ohm/100)*(1+0.00393*(Number(vdTemp)-20))*ft*a;
     const pct=(drop/v)*100;
     return {drop:drop.toFixed(2),pct:pct.toFixed(2),ok:pct<=3};
   }
   const vdResult = calcVD();
 
   // ── AI ──
-  const SYS_PROMPT = `You are an expert HVLS fan field technician at Fan Guys. Key knowledge:\n\nGFY/VividAir Z-Tech fans: Invertek ODE-3. CORRECT parameter format is P-01, P-02, P-03 (never P1-01). Fault 03=OC (increase P-03 accel, set P-13=2 Fan Mode). Fault 09=external trip/FA (T4-T5 jumper required if no FA system). EEF=memory wipe after surge (re-enter all params). Unlock: P-14=439, P-38=0. Lock wired keypad: P-38=1, P-14=0. Lock Navigator: P-38=0, P-14=0. P-15=6 for fire relay. Daisy chain: P-12=2 master, P-12=9 slave, P-36 for address. Navigator Modbus: P-12=3, P-36 three-part (address/9.6baud/t30000).\n\nZ-Tech specs (confirmed): 8-16ft=2HP/2.65A@480V, 18-24ft=2HP/3.5A@480V, all 10A circuits. Weights: 8ft=285lb through 24ft=395lb.\n\nBAF: proprietary NitroSeal Drive — never change parameters without BAF authorization 1-877-244-3267. PFX4: 12-16ft=1.9HP, 18-30ft=2.5HP, all 10A@460V.\n\nRite-Hite: VFD varies by model (Yaskawa/Allen-Bradley/Schneider). Fan-Commander 2.0 controller.\n\nMacroAir: Schneider ATV320 (direct drive) or Yaskawa V1000 (geared). Accel 60s recommended.\n\nAlways give concise, numbered field-practical advice. Safety and LOTO first.`;
+  const SYS_PROMPT = `You are an expert HVLS fan field technician at Fan Guys. Key knowledge:\n\nGFY/VividAir Z-Tech fans: Invertek ODE-3. CORRECT parameter format is P-01, P-02, P-03 (never P1-01). Fault 03=OC (increase P-03 accel, set P-13=2 Fan Mode). Fault 09=external trip/FA (verify the exact approved shutdown-input wiring; never bypass an installed safety interlock). EEF=memory wipe after surge (re-enter all params). Unlock: P-14=439, P-38=0. Lock wired keypad: P-38=1, P-14=0. Lock Navigator: P-38=0, P-14=0. P-15=6 for fire relay. Daisy chain: P-12=2 master, P-12=9 slave, P-36 for address. Navigator Modbus: P-12=3, P-36 three-part (address/9.6baud/t30000).\n\nZ-Tech specs (confirmed): 8-16ft=2HP/2.65A@480V, 18-24ft=2HP/3.5A@480V, all 10A circuits. Weights: 8ft=285lb through 24ft=395lb.\n\nBAF: proprietary NitroSeal Drive — never change parameters without BAF authorization 1-877-244-3267. PFX4: 12-16ft=1.9HP, 18-30ft=2.5HP, all 10A@460V.\n\nRite-Hite: VFD varies by model (Yaskawa/Allen-Bradley/Schneider). Fan-Commander 2.0 controller.\n\nMacroAir: Schneider ATV320 (direct drive) or Yaskawa V1000 (geared). Accel 60s recommended.\n\nAlways give concise, numbered field-practical advice. Safety and LOTO first.`;
 
   const sendAI = async () => {
     if (!aiIn.trim() || aiLoad) return;
+    if(!geminiKey){setShowKeyEntry(true);setGeminiKeyError("Add your restricted Gemini key to use AI. Reference tools work without it.");return;}
     const msg = {role:"user", content:aiIn};
     const msgs = [...aiMsgs, msg];
     setAiMsgs(msgs); setAiIn(""); setAiLoad(true);
@@ -3356,7 +3359,7 @@ function App() {
             parts: [{text: m.content}]
           }));
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent?key=${encodeURIComponent(geminiKey)}`,
           { method:"POST", headers:{"Content-Type":"application/json"},
             body: JSON.stringify({
               system_instruction: { parts: [{text: SYS_PROMPT}] },
@@ -3417,7 +3420,7 @@ function App() {
     const rows = (s.params.length>0) ? s.params.map(x=>({p:x.p,label:x.label,v:""})) : [{p:"",label:"",v:""},{p:"",label:"",v:""},{p:"",label:"",v:""}];
     return { id:Date.now(), fanSize:"", location:"", serial:"", date:new Date().toISOString().slice(0,10), vfd, rows, p36:{idx1:"",idx2:"",idx3:""} };
   };
-  const pcPersist = (next) => { setPcList(next); try { localStorage.setItem("fanGuysParamCaptures", JSON.stringify(next)); } catch(e){} };
+  const pcPersist = (next) => { setPcList(next); try { FGTStore.setItem("fanGuysParamCaptures", JSON.stringify(next)); } catch(e){} };
   const pcSave = () => { pcPersist([pcEditing, ...pcList.filter(c=>c.id!==pcEditing.id)]); setPcEditing(null); };
   const pcDel = (id) => pcPersist(pcList.filter(c=>c.id!==id));
   const pcCopy = (c) => {
@@ -3429,13 +3432,13 @@ function App() {
 
   // ── Render ──
   return (
-    <div style={{minHeight:"100vh",background:T.bg,fontFamily:"'Nunito',sans-serif",color:T.text}}>
+    <div style={{minHeight:"100vh",background:T.bg,fontFamily:"'Field Sans',Arial,sans-serif",color:T.text}}>
 
       {/* HEADER */}
       <div style={{background:"#111",padding:"12px 16px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
         <div style={{background:"#222",borderRadius:30,border:"3px solid #111",boxShadow:"0 0 0 2px #888,0 0 0 4px #111",padding:"5px 14px",display:"flex",alignItems:"center",gap:8}}>
+          <img src="../shared/techpro-mark.png" alt="" style={{width:30,height:30,borderRadius:8}}/>
           <span style={{fontWeight:900,fontSize:19,color:"#fff"}}>Fan</span>
-          <FanIcon size={28} spin/>
           <span style={{fontWeight:900,fontSize:19,color:"#fff"}}>Guys</span>
         </div>
         <div>
@@ -3444,7 +3447,7 @@ function App() {
         </div>
         <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
           <button onClick={()=>setShowSettings(true)}
-            style={{background:"#333",border:"1px solid #666",borderRadius:8,padding:"6px 12px",color:"#ddd",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
+            style={{background:"#333",border:"1px solid #666",borderRadius:8,padding:"6px 12px",color:"#ddd",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
             ⚙ Settings
           </button>
           <div style={{background:"#333",border:"1px solid #666",borderRadius:20,padding:"3px 10px",fontSize:10,color:"#aaa"}}>v6.0</div>
@@ -3465,7 +3468,7 @@ function App() {
             onClick={(e)=>e.stopPropagation()}>
             <button onClick={()=>{ setTab(0); setOpenMenu(null); }}
               style={{flexShrink:0,padding:"12px 16px",border:"none",cursor:"pointer",whiteSpace:"nowrap",
-                fontFamily:"'Nunito',sans-serif",fontWeight:900,fontSize:12,letterSpacing:"0.04em",
+                fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,fontSize:12,letterSpacing:"0.04em",
                 background:tab===0?T.accent:"#000",color:"#fff",
                 borderBottom:tab===0?`3px solid ${T.accent}`:"3px solid transparent",marginBottom:-3}}>
               FAN SETUP
@@ -3479,7 +3482,7 @@ function App() {
                 <div key={key} style={{position:"relative",flexShrink:0}}>
                   <button onClick={()=>setOpenMenu(isOpen?null:key)}
                     style={{padding:"12px 14px",border:"none",cursor:"pointer",whiteSpace:"nowrap",
-                      fontFamily:"'Nunito',sans-serif",fontWeight:hasActive?900:700,fontSize:12,letterSpacing:"0.04em",
+                      fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:hasActive?900:700,fontSize:12,letterSpacing:"0.04em",
                       background:isOpen?"#000":"transparent",color:(hasActive||isOpen)?"#fff":"#9A9A9A",
                       borderBottom:hasActive?`3px solid ${T.accent}`:"3px solid transparent",marginBottom:-3}}>
                     {m.label} <span style={{fontSize:9,opacity:0.8}}>{isOpen?"\u25B2":"\u25BC"}</span>
@@ -3494,7 +3497,7 @@ function App() {
                           <button key={idx} onClick={()=>pick(i)}
                             style={{display:"block",width:"100%",textAlign:"left",padding:"12px 16px",border:"none",
                               borderBottom:(idx < m.items.length-1)?`1px solid ${T.border}`:"none",cursor:"pointer",
-                              fontFamily:"'Nunito',sans-serif",fontWeight:active?900:700,fontSize:13,
+                              fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:active?900:700,fontSize:13,
                               background:active?T.accentLt:T.surface,color:active?T.accent:T.text}}>
                             {label}
                           </button>
@@ -3516,7 +3519,7 @@ function App() {
         ══════════════════════════════════════════════════════════ */}
         {tab===0 && (
           <div>
-            <SectionHead title="Fan Configuration" sub="Select brand and model — motor specs and parameters auto-fill"/>
+            <SectionHead title="Fan Configuration" sub="Match the exact motor, drive and controller. Reference values must be verified against the nameplate and linked manufacturer manual before programming."/>
 
             <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:16,marginBottom:12}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
@@ -3580,7 +3583,7 @@ function App() {
                       {l:"Min Fuse Size", v:motor.circuit||"—"},
                       {l:"NEMA Frame",  v:motor.frame||"—"},
                     ].map(i=>(
-                      <div key={i.l} style={{background:"#fff",border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 6px",textAlign:"center"}}>
+                      <div key={i.l} style={{background:"var(--ws-panel)",border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 6px",textAlign:"center"}}>
                         <div style={{fontSize:10,color:T.textSub,fontWeight:700,marginBottom:2}}>{i.l}</div>
                         <div style={{fontSize:14,fontWeight:900,color:T.text}}>{i.v}</div>
                       </div>
@@ -3592,9 +3595,9 @@ function App() {
                   {/* Extra specs row — coverage, weight, blade RPM */}
                   {(motor.sqft||motor.lbs||motor.rpm) && (
                     <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                      {motor.sqft && <span style={{background:"#fff",border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.textMid}}>📐 ~{motor.sqft.toLocaleString()} sq ft coverage</span>}
-                      {motor.rpm  && <span style={{background:"#fff",border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.textMid}}>🔄 {motor.rpm} RPM blade speed</span>}
-                      {motor.lbs  && <span style={{background:"#fff",border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.textMid}}>⚖ ~{motor.lbs} lbs</span>}
+                      {motor.sqft && <span style={{background:"var(--ws-panel)",border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.textMid}}>📐 ~{motor.sqft.toLocaleString()} sq ft coverage</span>}
+                      {motor.rpm  && <span style={{background:"var(--ws-panel)",border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.textMid}}>🔄 {motor.rpm} RPM blade speed</span>}
+                      {motor.lbs  && <span style={{background:"var(--ws-panel)",border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.textMid}}>⚖ ~{motor.lbs} lbs</span>}
                     </div>
                   )}
                   {motor.note && <div style={{fontSize:11,color:T.textSub,fontWeight:700,marginTop:8}}>ℹ {motor.note}</div>}
@@ -3612,7 +3615,7 @@ function App() {
                       <button onClick={()=>{ setManualBrandFilter(brand); setManualSearch(""); setTab(6); }}
                         style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,width:"100%",background:T.green,color:"#fff",
                           border:"none",borderRadius:8,padding:"11px 14px",fontSize:13,fontWeight:800,
-                          fontFamily:"'Nunito',sans-serif",cursor:"pointer"}}>
+                          fontFamily:"'Field Sans',Arial,sans-serif",cursor:"pointer"}}>
                         📚 View {brand} Manuals ({(bdata.manualLinks||[]).length}) →
                       </button>
                     )}
@@ -3620,7 +3623,7 @@ function App() {
                       <button onClick={()=>{ setTorqueBrandFilter(brand); setTorqueSearch(""); setTab(7); }}
                         style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,width:"100%",background:T.accent,color:"#fff",
                           border:"none",borderRadius:8,padding:"11px 14px",fontSize:13,fontWeight:800,
-                          fontFamily:"'Nunito',sans-serif",cursor:"pointer"}}>
+                          fontFamily:"'Field Sans',Arial,sans-serif",cursor:"pointer"}}>
                         🔧 View {brand} Torque Specs →
                       </button>
                     )}
@@ -3634,7 +3637,7 @@ function App() {
                             background:`linear-gradient(180deg, ${bt.primary} 0%, ${bt.primaryDk} 100%)`,
                             color:fg, border:"none", borderRadius:8, padding:"11px 14px",
                             fontSize:13, fontWeight:900,
-                            fontFamily:"'Nunito',sans-serif", cursor:"pointer",
+                            fontFamily:"'Field Sans',Arial,sans-serif", cursor:"pointer",
                             letterSpacing:0.3,
                             boxShadow:`0 2px 4px ${bt.primary}40`}}>
                           🏷 Open {brand} Brand Page →
@@ -3652,7 +3655,7 @@ function App() {
                   <div style={{display:"flex",flexDirection:"column",gap:6}}>
                     {(bdata.videos||[]).map((v,i)=>(
                       <a key={i} href={v.url} target="_blank" rel="noreferrer"
-                        style={{display:"flex",alignItems:"flex-start",gap:10,background:"#fff",border:`1px solid ${T.purpleBd}`,borderRadius:6,padding:"8px 10px",textDecoration:"none"}}>
+                        style={{display:"flex",alignItems:"flex-start",gap:10,background:"var(--ws-panel)",border:`1px solid ${T.purpleBd}`,borderRadius:6,padding:"8px 10px",textDecoration:"none"}}>
                         <span style={{fontSize:18,flexShrink:0}}>▶</span>
                         <div>
                           <div style={{fontWeight:800,fontSize:12,color:T.purple,lineHeight:1.3}}>{v.label}</div>
@@ -3699,7 +3702,7 @@ function App() {
                   setParams(builder(d, motor, voltage === "240-1ph" ? "230" : voltage));
                 }
               }
-            }} style={{width:"100%",padding:13,marginBottom:16,background:brand?T.accent:"#9CA3AF",border:"none",borderRadius:10,color:"#fff",cursor:brand?"pointer":"not-allowed",fontFamily:"'Nunito',sans-serif",fontWeight:900,fontSize:14,letterSpacing:"0.06em",boxShadow:brand?"0 2px 10px rgba(29,78,216,0.25)":"none"}}>
+            }} style={{width:"100%",padding:13,marginBottom:16,background:brand?T.accent:"#9CA3AF",border:"none",borderRadius:10,color:"#fff",cursor:brand?"pointer":"not-allowed",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,fontSize:14,letterSpacing:"0.06em",boxShadow:brand?"0 2px 10px rgba(29,78,216,0.25)":"none"}}>
               ▶ Generate VFD Parameters
             </button>
 
@@ -3740,7 +3743,7 @@ function App() {
                       {/* Tappable header */}
                       <button onClick={()=>setActiveFault(active?null:f)}
                         style={{display:"block",width:"100%",background:active?sbg:T.surface,border:"none",
-                          padding:"11px 13px",cursor:"pointer",textAlign:"left",fontFamily:"'Nunito',sans-serif"}}>
+                          padding:"11px 13px",cursor:"pointer",textAlign:"left",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
                           <span style={{fontWeight:900,fontSize:13,color:sc,fontFamily:"monospace"}}>{f.display}</span>
                           <span style={{fontSize:12,color:T.text,fontWeight:700,flex:1}}>{f.label}</span>
@@ -3799,7 +3802,7 @@ function App() {
                         <span style={{background:T.bg,color:T.textSub,border:`1px solid ${T.border}`,borderRadius:4,padding:"2px 7px",fontSize:11,fontWeight:700}}>TOOL: {item.tool}</span>
                       </div>
                       <button onClick={()=>setOpenTest(openTest===i?null:i)}
-                        style={{background:openTest===i?T.accent:T.bg,border:`1.5px solid ${openTest===i?T.accent:T.border}`,borderRadius:6,padding:"4px 10px",color:openTest===i?"#fff":T.textSub,fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>
+                        style={{background:openTest===i?T.accent:T.bg,border:`1.5px solid ${openTest===i?T.accent:T.border}`,borderRadius:6,padding:"4px 10px",color:openTest===i?"#fff":T.textSub,fontFamily:"'Field Sans',Arial,sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>
                         {openTest===i?"▲ Hide":"▼ How to Test"}
                       </button>
                     </div>
@@ -3822,7 +3825,7 @@ function App() {
             <div style={{textAlign:"center",color:T.textSub,fontSize:13,fontWeight:700,padding:"8px 0"}}>
               {Object.values(checks).filter(Boolean).length} / {ELEC_TESTS.length} complete
             </div>
-            <button onClick={()=>setChecks({})} style={{width:"100%",padding:10,background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:8,color:T.textSub,fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+            <button onClick={()=>setChecks({})} style={{width:"100%",padding:10,background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:8,color:T.textSub,fontFamily:"'Field Sans',Arial,sans-serif",fontSize:13,fontWeight:700,cursor:"pointer"}}>
               ↺ Reset Checklist
             </button>
           </div>
@@ -3880,7 +3883,7 @@ function App() {
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
               {["⚡ Voltage Drop","🔢 Ohm's Law","📊 Wire Ampacity","📋 Reference"].map((t,i)=>(
                 <button key={i} onClick={()=>setCalcTab(i)}
-                  style={{padding:"7px 12px",background:calcTab===i?T.accent:T.surface,border:`1.5px solid ${calcTab===i?T.accent:T.border}`,borderRadius:20,color:calcTab===i?"#fff":T.textSub,fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>
+                  style={{padding:"7px 12px",background:calcTab===i?T.accent:T.surface,border:`1.5px solid ${calcTab===i?T.accent:T.border}`,borderRadius:20,color:calcTab===i?"#fff":T.textSub,fontFamily:"'Field Sans',Arial,sans-serif",fontSize:11,fontWeight:800,cursor:"pointer"}}>
                   {t}
                 </button>
               ))}
@@ -3903,7 +3906,8 @@ function App() {
                       <option value="3">3-Phase</option><option value="1">Single Phase</option>
                     </select></div>
                 </div>
-                {vdResult ? (
+                <div style={{margin:"12px 0",fontSize:13,color:T.text}}><label>Conductor temperature (copper) <select aria-label="Conductor temperature" value={vdTemp} onChange={e=>setVdTemp(e.target.value)} style={{padding:10,marginLeft:8}}><option value="20">20°C reference</option><option value="60">60°C</option><option value="75">75°C operating assumption</option><option value="90">90°C</option></select></label><p style={{fontSize:12,lineHeight:1.6}}>One-way length. Resistive estimate; excludes reactance/power factor. R(T) = R20 × [1 + 0.00393 × (T − 20)]. Temperature is an assumption, not an ampacity rating.</p><details><summary>Checked examples · 10 AWG / 100 ft / 10 A</summary><p>20°C: 240 V 1Ø = 2.000 V (0.833%); 480 V 3Ø = 1.732 V (0.361%).<br/>75°C: 240 V 1Ø = 2.432 V (1.013%); 480 V 3Ø = 2.106 V (0.439%). Table resistance: 0.100 Ω/100 ft at 20°C.</p></details></div>
+              {vdResult ? (
                   <div style={{background:vdResult.ok?T.greenBg:T.redBg,border:`1.5px solid ${vdResult.ok?T.greenBd:T.redBd}`,borderRadius:10,padding:"14px 16px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                       <div style={{textAlign:"center"}}><div style={{fontSize:11,fontWeight:700,color:T.textSub}}>VOLTAGE DROP</div><div style={{fontSize:26,fontWeight:900,color:vdResult.ok?T.green:T.red}}>{vdResult.drop} V</div></div>
@@ -3918,6 +3922,7 @@ function App() {
             )}
 
             {/* Ohm's Law */}
+            {ohmError&&<p role="alert" style={{color:T.red}}>{ohmError}</p>}
             {calcTab===1 && (
               <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:16}}>
                 <div style={{fontWeight:900,fontSize:15,color:T.text,marginBottom:4}}>🔢 Ohm's Law Calculator</div>
@@ -3928,7 +3933,7 @@ function App() {
                       <label style={{fontSize:11,fontWeight:700,color:T.textSub,display:"block",marginBottom:4}}>{f.label}</label>
                       <div style={{display:"flex",gap:6}}>
                         <input type="number" value={f.val} onChange={e=>f.set(e.target.value)} style={{...SINP(),flex:1}}/>
-                        <button onClick={()=>solveOhm(f.key)} style={{padding:"7px 10px",background:T.accent,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:800,cursor:"pointer",flexShrink:0}}>Solve</button>
+                        <button onClick={()=>solveOhm(f.key)} style={{padding:"7px 10px",background:T.accent,border:"none",borderRadius:6,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontSize:11,fontWeight:800,cursor:"pointer",flexShrink:0}}>Solve</button>
                       </div>
                     </div>
                   ))}
@@ -3937,7 +3942,7 @@ function App() {
                   <div style={{fontWeight:800,fontSize:13,color:T.accent,marginBottom:8}}>Formulas</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                     {["V = I × R","I = V ÷ R","R = V ÷ I","P = V × I","P = I² × R","P = V² ÷ R"].map(f=>(
-                      <div key={f} style={{background:"#fff",borderRadius:6,padding:"6px 10px",fontFamily:"monospace",fontSize:13,fontWeight:700,color:T.text,border:`1px solid ${T.border}`}}>{f}</div>
+                      <div key={f} style={{background:"var(--ws-panel)",borderRadius:6,padding:"6px 10px",fontFamily:"monospace",fontSize:13,fontWeight:700,color:T.text,border:`1px solid ${T.border}`}}>{f}</div>
                     ))}
                   </div>
                 </div>
@@ -3952,10 +3957,10 @@ function App() {
                 <div style={{overflowX:"auto"}}>
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                     <thead><tr style={{background:T.accent,color:"#fff"}}>
-                      {["AWG","mm²","60°C","75°C","90°C","Ω/100ft"].map(h=><th key={h} style={{padding:"8px 8px",textAlign:"center",fontWeight:800,fontSize:11}}>{h}</th>)}
+                      {["AWG","mm²","60°C","75°C","90°C","Ω/100ft @20°C"].map(h=><th key={h} style={{padding:"8px 8px",textAlign:"center",fontWeight:800,fontSize:11}}>{h}</th>)}
                     </tr></thead>
                     <tbody>{AWG_DATA.map((w,i)=>(
-                      <tr key={w.awg} style={{background:i%2===0?T.bg:"#fff"}}>
+                      <tr key={w.awg} style={{background:i%2===0?T.bg:T.surface}}>
                         <td style={{padding:"7px 8px",textAlign:"center",fontWeight:900,color:T.accent,fontFamily:"monospace"}}>{w.awg}</td>
                         <td style={{padding:"7px 8px",textAlign:"center",color:T.textSub}}>{w.mm2}</td>
                         <td style={{padding:"7px 8px",textAlign:"center",color:T.textMid}}>{w.a60}</td>
@@ -3987,7 +3992,7 @@ function App() {
                     {cat:"Phase imbalance limit",limit:"<2%",note:">5% will cause motor overheating and VFD faults"},
                     {cat:"VFD-to-motor max run",limit:"200ft",note:"Z-Tech spec — longer requires upsized cable"},
                   ].map((r,i)=>(
-                    <div key={i} style={{display:"flex",flexWrap:"wrap",gap:8,padding:"8px 10px",borderRadius:8,background:i%2===0?T.bg:"#fff",marginBottom:4,border:`1px solid ${T.border}`,alignItems:"center"}}>
+                    <div key={i} style={{display:"flex",flexWrap:"wrap",gap:8,padding:"8px 10px",borderRadius:8,background:i%2===0?T.bg:T.surface,marginBottom:4,border:`1px solid ${T.border}`,alignItems:"center"}}>
                       <div style={{flex:"1 1 160px",fontWeight:700,fontSize:12,color:T.text}}>{r.cat}</div>
                       <div style={{background:T.accent,color:"#fff",borderRadius:6,padding:"2px 10px",fontWeight:900,fontSize:12,flexShrink:0}}>{r.limit}</div>
                       <div style={{flex:"2 1 140px",fontSize:11,color:T.textSub}}>{r.note}</div>
@@ -4005,7 +4010,7 @@ function App() {
                     ["Ground conductor","Separate insulated PE ground from panel to each individual VFD."],
                     ["Input vs output","NEVER run VFD input power and output to motor in the same conduit."],
                   ].map(([rule,desc],i)=>(
-                    <div key={i} style={{display:"flex",gap:10,padding:"8px 10px",borderRadius:8,background:i%2===0?T.bg:"#fff",marginBottom:4,border:`1px solid ${T.border}`,alignItems:"flex-start"}}>
+                    <div key={i} style={{display:"flex",gap:10,padding:"8px 10px",borderRadius:8,background:i%2===0?T.bg:T.surface,marginBottom:4,border:`1px solid ${T.border}`,alignItems:"flex-start"}}>
                       <div style={{background:T.accentLt,color:T.accent,border:`1px solid ${T.accentBd}`,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:800,flexShrink:0,whiteSpace:"nowrap"}}>{rule}</div>
                       <div style={{fontSize:12,color:T.textMid,lineHeight:1.5}}>{desc}</div>
                     </div>
@@ -4035,13 +4040,13 @@ function App() {
               </div>
               <div style={{display:"flex",gap:6}}>
                 {geminiKey && (
-                  <button onClick={()=>{localStorage.removeItem(GEMINI_KEY_STORAGE);setGeminiKey("");setGeminiKeyError("");}}
-                    style={{padding:"5px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>
+                  <button onClick={()=>{FGTStore.removeItem(GEMINI_KEY_STORAGE);setGeminiKey("");setGeminiKeyError("");}}
+                    style={{padding:"5px 10px",background:T.redBg,border:`1px solid ${T.redBd}`,borderRadius:6,color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>
                     Remove Key
                   </button>
                 )}
                 <button onClick={()=>setShowKeyEntry(p=>!p)}
-                  style={{padding:"5px 10px",background:T.accentLt,border:`1px solid ${T.accentBd}`,borderRadius:6,color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>
+                  style={{padding:"5px 10px",background:T.accentLt,border:`1px solid ${T.accentBd}`,borderRadius:6,color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:11,cursor:"pointer"}}>
                   {showKeyEntry?"Cancel":(geminiKey?"Change Key":"Add Key")}
                 </button>
               </div>
@@ -4050,7 +4055,7 @@ function App() {
             {/* Key entry panel */}
             {showKeyEntry && (
               <div style={{background:T.surface,border:`1.5px solid ${T.accentBd}`,borderRadius:10,padding:"14px 16px",marginBottom:12}}>
-                <div style={{fontWeight:800,fontSize:13,color:T.text,marginBottom:4}}>Enter Gemini API Key</div>
+                <div style={{fontWeight:800,fontSize:13,color:T.text,marginBottom:4}}>Enter Gemini API Key</div><label style={{display:"block",fontSize:12,color:T.textSub,margin:"12px 0"}}>Gemini model<input aria-label="Gemini model" value={geminiModel} onChange={e=>{setGeminiModel(e.target.value.trim());FGTStore.setItem("fanGuysGeminiModel",e.target.value.trim());}} style={{display:"block",padding:10,width:"100%",marginTop:5}}/></label>
                 <div style={{fontSize:12,color:T.textSub,marginBottom:10,lineHeight:1.6}}>
                   Get your key at <strong>aistudio.google.com</strong>. Saved on this device only — never shared.
                 </div>
@@ -4060,7 +4065,7 @@ function App() {
                     value={geminiKeyInput}
                     onChange={e=>{setGeminiKeyInput(e.target.value);setGeminiKeyError("");}}
                     onKeyDown={e=>{if(e.key==="Enter"&&geminiKeyInput.trim()){
-                      localStorage.setItem(GEMINI_KEY_STORAGE, geminiKeyInput.trim());
+                      FGTStore.setItem(GEMINI_KEY_STORAGE, geminiKeyInput.trim());
                       setGeminiKey(geminiKeyInput.trim());
                       setGeminiKeyInput("");
                       setShowKeyEntry(false);
@@ -4070,13 +4075,13 @@ function App() {
                   />
                   <button onClick={()=>{
                     if(!geminiKeyInput.trim()){setGeminiKeyError("Please enter a key.");return;}
-                    localStorage.setItem(GEMINI_KEY_STORAGE, geminiKeyInput.trim());
+                    FGTStore.setItem(GEMINI_KEY_STORAGE, geminiKeyInput.trim());
                     setGeminiKey(geminiKeyInput.trim());
                     setGeminiKeyInput("");
                     setShowKeyEntry(false);
                     setGeminiKeyError("");
                   }}
-                    style={{padding:"10px 18px",background:T.accent,border:"none",borderRadius:8,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+                    style={{padding:"10px 18px",background:T.accent,border:"none",borderRadius:8,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>
                     Connect
                   </button>
                 </div>
@@ -4117,7 +4122,7 @@ function App() {
               <input value={aiIn} onChange={e=>setAiIn(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&sendAI()}
                 placeholder="Fault code, wiring question, commissioning issue…" style={{...INP(),flex:1}}/>
               <button onClick={sendAI} disabled={aiLoad}
-                style={{padding:"10px 18px",background:aiLoad?"#9CA3AF":T.accent,border:"none",borderRadius:8,color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:900,fontSize:13,cursor:aiLoad?"not-allowed":"pointer"}}>
+                style={{padding:"10px 18px",background:aiLoad?"#9CA3AF":T.accent,border:"none",borderRadius:8,color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,fontSize:13,cursor:aiLoad?"not-allowed":"pointer"}}>
                 Send
               </button>
             </div>
@@ -4126,7 +4131,7 @@ function App() {
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {["GFY showing fault 03 on startup","EEF fault after power surge","No FA system — what jumper?","How to set up 5-fan daisy chain","BAF won't reset after fault","Rite-Hite ABB 2001 fault — next steps"].map(q=>(
                   <button key={q} onClick={()=>setAiIn(q)}
-                    style={{background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:20,padding:"5px 12px",color:T.textMid,fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:700,cursor:"pointer"}}>
+                    style={{background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:20,padding:"5px 12px",color:T.textMid,fontFamily:"'Field Sans',Arial,sans-serif",fontSize:11,fontWeight:700,cursor:"pointer"}}>
                     {q}
                   </button>
                 ))}
@@ -4157,7 +4162,7 @@ function App() {
             <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:6}}>
               <button onClick={()=>setManualBrandFilter("")}
                 style={{flexShrink:0,padding:"6px 12px",borderRadius:20,fontSize:12,fontWeight:800,cursor:"pointer",
-                  fontFamily:"'Nunito',sans-serif",whiteSpace:"nowrap",
+                  fontFamily:"'Field Sans',Arial,sans-serif",whiteSpace:"nowrap",
                   background:manualBrandFilter===""?T.accent:T.surface,color:manualBrandFilter===""?"#fff":T.textSub,
                   border:`1.5px solid ${manualBrandFilter===""?T.accent:T.border}`}}>
                 All Brands
@@ -4165,7 +4170,7 @@ function App() {
               {Object.keys(brands).map(b=>(
                 <button key={b} onClick={()=>setManualBrandFilter(b)}
                   style={{flexShrink:0,padding:"6px 12px",borderRadius:20,fontSize:12,fontWeight:800,cursor:"pointer",
-                    fontFamily:"'Nunito',sans-serif",whiteSpace:"nowrap",
+                    fontFamily:"'Field Sans',Arial,sans-serif",whiteSpace:"nowrap",
                     background:manualBrandFilter===b?T.accent:T.surface,color:manualBrandFilter===b?"#fff":T.textSub,
                     border:`1.5px solid ${manualBrandFilter===b?T.accent:T.border}`}}>
                   {b}
@@ -4243,7 +4248,7 @@ function App() {
               </div>
               <button onClick={()=>setTorqueUnit(torqueUnit==="ft"?"nm":"ft")}
                 style={{flexShrink:0,padding:"9px 14px",background:T.accentLt,border:`1.5px solid ${T.accent}`,borderRadius:8,
-                  color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+                  color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>
                 {torqueUnit==="ft"?"ft-lbs":"N·m"}
               </button>
             </div>
@@ -4252,7 +4257,7 @@ function App() {
             <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:6}}>
               <button onClick={()=>setTorqueBrandFilter("")}
                 style={{flexShrink:0,padding:"6px 12px",borderRadius:20,fontSize:12,fontWeight:800,cursor:"pointer",
-                  fontFamily:"'Nunito',sans-serif",whiteSpace:"nowrap",
+                  fontFamily:"'Field Sans',Arial,sans-serif",whiteSpace:"nowrap",
                   background:torqueBrandFilter===""?T.accent:T.surface,color:torqueBrandFilter===""?"#fff":T.textSub,
                   border:`1.5px solid ${torqueBrandFilter===""?T.accent:T.border}`}}>
                 All Brands
@@ -4260,7 +4265,7 @@ function App() {
               {Object.keys(TORQUE_DATA).map(b=>(
                 <button key={b} onClick={()=>setTorqueBrandFilter(b)}
                   style={{flexShrink:0,padding:"6px 12px",borderRadius:20,fontSize:12,fontWeight:800,cursor:"pointer",
-                    fontFamily:"'Nunito',sans-serif",whiteSpace:"nowrap",
+                    fontFamily:"'Field Sans',Arial,sans-serif",whiteSpace:"nowrap",
                     background:torqueBrandFilter===b?T.accent:T.surface,color:torqueBrandFilter===b?"#fff":T.textSub,
                     border:`1.5px solid ${torqueBrandFilter===b?T.accent:T.border}`}}>
                   {b}
@@ -4387,12 +4392,12 @@ function App() {
                     <div style={{fontSize:11,color:T.textSub,marginTop:4}}>fans</div>
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-                    <div style={{background:"#fff",border:`1px solid ${T.border}`,borderRadius:8,padding:"10px",textAlign:"center"}}>
+                    <div style={{background:"var(--ws-panel)",border:`1px solid ${T.border}`,borderRadius:8,padding:"10px",textAlign:"center"}}>
                       <div style={{fontSize:11,color:T.textSub,fontWeight:700,marginBottom:2}}>Destrat (low)</div>
                       <div style={{fontSize:22,fontWeight:900,color:T.green}}>{lo}</div>
                       <div style={{fontSize:10,color:T.textSub,marginTop:2}}>{loCols} × {loRows}, ~{destratSp}ft apart</div>
                     </div>
-                    <div style={{background:"#fff",border:`1px solid ${T.border}`,borderRadius:8,padding:"10px",textAlign:"center"}}>
+                    <div style={{background:"var(--ws-panel)",border:`1px solid ${T.border}`,borderRadius:8,padding:"10px",textAlign:"center"}}>
                       <div style={{fontSize:11,color:T.textSub,fontWeight:700,marginBottom:2}}>Working (high)</div>
                       <div style={{fontSize:22,fontWeight:900,color:T.accent}}>{hi}</div>
                       <div style={{fontSize:10,color:T.textSub,marginTop:2}}>{hiCols} × {hiRows}, ~{workSp}ft apart</div>
@@ -4425,7 +4430,7 @@ function App() {
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
                     <div style={{fontWeight:900,fontSize:16,color:T.text,flex:1}}>Param Capture</div>
-                    <button onClick={()=>setPcEditing(null)} style={{background:T.bg,border:`1.5px solid ${T.border}`,borderRadius:8,padding:"7px 12px",fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,color:T.textSub,cursor:"pointer"}}>Cancel</button>
+                    <button onClick={()=>setPcEditing(null)} style={{background:T.bg,border:`1.5px solid ${T.border}`,borderRadius:8,padding:"7px 12px",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,color:T.textSub,cursor:"pointer"}}>Cancel</button>
                   </div>
                   <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginBottom:12}}>
                     <div style={{fontSize:11,fontWeight:800,color:T.textSub,letterSpacing:"0.06em",marginBottom:8}}>VFD TYPE</div>
@@ -4458,7 +4463,7 @@ function App() {
                         </div>
                       ))}
                     </div>
-                    <button onClick={()=>set({rows:[...E.rows,{p:"",label:"",v:""}]})} style={{marginTop:10,background:T.accentLt,border:`1.5px solid ${T.accentBd}`,borderRadius:8,padding:"8px 14px",color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>＋ Add custom row</button>
+                    <button onClick={()=>set({rows:[...E.rows,{p:"",label:"",v:""}]})} style={{marginTop:10,background:T.accentLt,border:`1.5px solid ${T.accentBd}`,borderRadius:8,padding:"8px 14px",color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:13,cursor:"pointer"}}>＋ Add custom row</button>
                   </div>
                   {sch.p36 && (
                     <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginBottom:12}}>
@@ -4472,8 +4477,8 @@ function App() {
                     </div>
                   )}
                   <div style={{display:"flex",gap:8}}>
-                    <button onClick={pcSave} style={{flex:1,background:T.green,border:"none",borderRadius:8,padding:"12px",color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:900,fontSize:14,cursor:"pointer"}}>Save to device</button>
-                    <button onClick={()=>pcCopy(E)} style={{flex:1,background:T.accent,border:"none",borderRadius:8,padding:"12px",color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:900,fontSize:14,cursor:"pointer"}}>{pcCopied?"Copied ✓":"Copy All"}</button>
+                    <button onClick={pcSave} style={{flex:1,background:T.green,border:"none",borderRadius:8,padding:"12px",color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,fontSize:14,cursor:"pointer"}}>Save to device</button>
+                    <button onClick={()=>pcCopy(E)} style={{flex:1,background:T.accent,border:"none",borderRadius:8,padding:"12px",color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,fontSize:14,cursor:"pointer"}}>{pcCopied?"Copied ✓":"Copy All"}</button>
                   </div>
                   <div style={{fontSize:11,color:T.textSub,marginTop:10,lineHeight:1.5}}>💡 "Copy All" is your real backup — paste into a note or text it. Pre-labeled params come from manufacturer docs; verify against your actual drive.</div>
                 </div>
@@ -4482,7 +4487,7 @@ function App() {
               <div>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
                   <div style={{fontWeight:900,fontSize:16,color:T.text,flex:1}}>VFD Param Captures</div>
-                  <button onClick={()=>setPcEditing(pcBlank("Invertek ODE-3"))} style={{background:T.green,border:"none",borderRadius:8,padding:"9px 14px",color:"#fff",fontFamily:"'Nunito',sans-serif",fontWeight:900,fontSize:13,cursor:"pointer"}}>＋ New Capture</button>
+                  <button onClick={()=>setPcEditing(pcBlank("Invertek ODE-3"))} style={{background:T.green,border:"none",borderRadius:8,padding:"9px 14px",color:"#fff",fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:900,fontSize:13,cursor:"pointer"}}>＋ New Capture</button>
                 </div>
                 {pcList.length===0 ? (
                   <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:"40px 20px",textAlign:"center",color:T.textSub,fontSize:14}}>No captures yet.<br/>Tap "＋ New Capture" to record a fan's VFD parameters.</div>
@@ -4495,9 +4500,9 @@ function App() {
                             <div style={{fontWeight:800,fontSize:14,color:T.text}}>{c.fanSize||"(no fan size)"} {c.location?("· "+c.location):""}</div>
                             <div style={{fontSize:11,color:T.textSub,marginTop:2}}>{c.vfd} · {c.serial||"no serial"} · {c.date}</div>
                           </div>
-                          <button onClick={()=>setPcEditing(c)} style={{background:T.accentLt,border:`1.5px solid ${T.accentBd}`,borderRadius:6,padding:"6px 10px",color:T.accent,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Open</button>
-                          <button onClick={()=>pcCopy(c)} style={{background:T.bg,border:`1.5px solid ${T.border}`,borderRadius:6,padding:"6px 10px",color:T.textSub,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Copy</button>
-                          <button onClick={()=>pcDel(c.id)} style={{background:T.redBg,border:`1.5px solid #FCA5A5`,borderRadius:6,padding:"6px 10px",color:T.red,fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Del</button>
+                          <button onClick={()=>setPcEditing(c)} style={{background:T.accentLt,border:`1.5px solid ${T.accentBd}`,borderRadius:6,padding:"6px 10px",color:T.accent,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Open</button>
+                          <button onClick={()=>pcCopy(c)} style={{background:T.bg,border:`1.5px solid ${T.border}`,borderRadius:6,padding:"6px 10px",color:T.textSub,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Copy</button>
+                          <button onClick={()=>pcDel(c.id)} style={{background:T.redBg,border:`1.5px solid #FCA5A5`,borderRadius:6,padding:"6px 10px",color:T.red,fontFamily:"'Field Sans',Arial,sans-serif",fontWeight:800,fontSize:12,cursor:"pointer"}}>Del</button>
                         </div>
                       </div>
                     ))}
@@ -4532,7 +4537,7 @@ function App() {
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+        700;800;900&display=swap');
         @keyframes fanSpin { to { transform: rotate(360deg); } }
         @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-5px);opacity:1} }
         select option { background:#fff; color:#111; }
