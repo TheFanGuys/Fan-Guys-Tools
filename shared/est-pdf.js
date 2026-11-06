@@ -94,7 +94,7 @@
     var file;
     try { file = new File([out.blob], out.name, { type: 'application/pdf' }); } catch (e) {}
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file], title: out.name }).catch(function (e) { if (e && e.name !== 'AbortError') download(out); });
+      navigator.share({ files: [file] }).catch(function (e) { if (e && e.name !== 'AbortError') download(out); });
     } else download(out);
   }
   function download(out) {

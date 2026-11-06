@@ -342,7 +342,7 @@ table.rates{width:100%;border-collapse:collapse;font-size:14px}
     var blob=new Blob([JSON.stringify(out)],{type:'application/json'});
     try{
       var file=new File([blob],name,{type:'application/json'});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).catch(function(){});return}
+      if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file]}).catch(function(){});return}
     }catch(e){}
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
     toast('Backup saved');
