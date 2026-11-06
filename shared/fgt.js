@@ -58,7 +58,8 @@
       fill('addrState', j.state); fill('addrZip', j.zip);
     } else if (TOOL === 'estimate') {
       var z = document.getElementById('zip');
-      if (z && !z.value && j.zip) { z.value = String(j.zip).slice(0, 5); z.dispatchEvent(new Event('input', { bubbles: true })); z.dispatchEvent(new Event('change', { bubbles: true })); }
+      var q = j.zip ? String(j.zip).slice(0, 5) : (j.city ? j.city + (j.state ? ', ' + j.state : '') : '');
+      if (z && !z.value && q) { z.value = q; z.dispatchEvent(new Event('input', { bubbles: true })); z.dispatchEvent(new Event('change', { bubbles: true })); }
     }
   }
 

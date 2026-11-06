@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <script src="../shared/fgt.js" data-tool="estimate"></script>
+<script src="../shared/jspdf.js"></script>
+<script src="../shared/est-pdf.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fan Guys — Cost Estimator</title>
@@ -164,8 +166,8 @@
 <div id="app">
 
   <div class="section">
-    <label class="lbl" for="zip">Job Site Zip Code <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
-    <input type="text" id="zip" maxlength="5" placeholder="Enter zip to auto-detect city" />
+    <label class="lbl" for="zip">Job Site Zip or City <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+    <input type="text" id="zip" maxlength="60" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="85043 or Mesa, AZ" />
     <div id="zip-feedback"></div>
     <div id="zip-error"></div>
   </div>
@@ -280,7 +282,7 @@
     </div>
     <div class="btn-row">
       <button id="new-btn">&#8635; New Estimate</button>
-      <button id="print-btn">&#128438; Print / Save PDF</button>
+      <button id="print-btn">&#128196; Save / Share PDF</button>
     </div>
   </div>
 </div>
@@ -607,7 +609,7 @@ function updateTierNote() {
     resetBtn.style.display = locationInfo ? 'inline' : 'none';
     resetBtn.textContent = 'Reset to auto (' + TIERS[locationInfo ? locationInfo.tier : 'standard'].label + ')';
   } else if (locationInfo) {
-    note.textContent = '— auto from zip' + (locationInfo.hotel ? ' · $' + locationInfo.hotel + '/night' : '');
+    note.textContent = '— auto from location' + (locationInfo.hotel ? ' · $' + locationInfo.hotel + '/night' : '');
     note.style.color = '#4b5563';
     resetBtn.style.display = 'none';
   } else {
@@ -619,44 +621,116 @@ document.getElementById('reset-auto').addEventListener('click', function() {
   manualTier = null; overrides = {}; buildTierGrid(); updateTierNote();
 });
 
-// Zip
-var zipTimer = null;
-function lookupZip(zip) {
+// Zip or city
+var zipTimer = null, placeSeq = 0;
+var US_STATES = {AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'District of Columbia',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'};
+function stateCode(s) {
+  s = String(s || '').trim(); if (!s) return '';
+  var up = s.toUpperCase().replace(/\./g, '');
+  if (US_STATES[up]) return up;
+  for (var k in US_STATES) if (US_STATES[k].toLowerCase() === s.toLowerCase()) return k;
+  return '';
+}
+function parsePlace(q) {
+  q = q.trim().replace(/\s+/g, ' ');
+  var m = q.match(/^(.+?)[,\s]+([A-Za-z.]{2,3}|[A-Za-z ]{4,})$/);
+  if (m) { var st = stateCode(m[2]); if (st) return { city: m[1].replace(/,$/, '').trim(), st: st }; }
+  if (q.indexOf(',') > 0) { var parts = q.split(','); var st2 = stateCode(parts.pop()); if (st2) return { city: parts.join(',').trim(), st: st2 }; }
+  return { city: q.replace(/,$/, ''), st: '' };
+}
+function placeBusy(msg) {
+  document.getElementById('zip-feedback').innerHTML = '<span class="spinner"></span><span style="font-size:.78rem;color:#6b7280;font-family:\'Barlow\',sans-serif">' + msg + '</span>';
+  document.getElementById('zip-error').style.display = 'none';
+}
+function setPlace(city, state) {
   var fb = document.getElementById('zip-feedback');
+  var info = getCityInfo(city);
+  locationInfo = { city:city, state:state, tier:info.tier, hotel:info.hotel };
+  var td = getTierData();
+  fb.innerHTML = '<span style="color:' + td.color + '">📍 ' + city + ', ' + state + '</span>' +
+    (!manualTier ? '<span style="color:#6b7280;font-weight:400"> — ' + td.label + (info.hotel ? ' · $' + info.hotel + '/night' : '') + '</span>' : '');
+  document.getElementById('zip-error').style.display = 'none';
+  buildTierGrid(); updateTierNote();
+  try { document.dispatchEvent(new Event('input')); } catch (e) {}
+}
+function placeFail(msg) {
+  locationInfo = null;
+  document.getElementById('zip-feedback').textContent = '';
   var err = document.getElementById('zip-error');
-  if (zip.length !== 5) { fb.textContent = ''; err.style.display = 'none'; locationInfo = null; buildTierGrid(); updateTierNote(); return; }
-  zipLoading = true;
-  fb.innerHTML = '<span class="spinner"></span><span style="font-size:.78rem;color:#6b7280;font-family:\'Barlow\',sans-serif">Looking up city...</span>';
-  err.style.display = 'none';
+  err.textContent = msg; err.style.display = 'block';
+  buildTierGrid(); updateTierNote();
+}
+function showChoices(list) {
+  var fb = document.getElementById('zip-feedback');
+  fb.innerHTML = '<span style="color:#9ca3af;font-weight:400;font-family:\'Barlow\',sans-serif">Which one? </span>';
+  list.forEach(function (p) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = p.city + ', ' + p.st;
+    b.style.cssText = 'margin:.3rem .35rem 0 0;padding:.45rem .7rem;border-radius:999px;border:1px solid rgba(245,158,11,.5);background:rgba(245,158,11,.12);color:#f59e0b;font:700 .9rem "Barlow Condensed",sans-serif';
+    b.onclick = function () { document.getElementById('zip').value = p.city + ', ' + p.st; setPlace(p.city, p.state); };
+    fb.appendChild(b);
+  });
+}
+function lookupZip(zip) {
+  var seq = ++placeSeq;
+  zipLoading = true; placeBusy('Looking up city...');
   fetch('https://api.zippopotam.us/us/' + zip)
     .then(function(r) { if (!r.ok) throw new Error(); return r.json(); })
     .then(function(data) {
+      if (seq !== placeSeq) return;
       var place = data.places && data.places[0];
       if (!place) throw new Error();
-      var city = place['place name'], state = place['state'];
-      var info = getCityInfo(city);
-      locationInfo = { city:city, state:state, tier:info.tier, hotel:info.hotel };
-      var td = getTierData();
-      fb.innerHTML = '<span style="color:' + td.color + '">📍 ' + city + ', ' + state + '</span>' +
-        (!manualTier ? '<span style="color:#6b7280;font-weight:400"> — ' + td.label + (info.hotel ? ' · $' + info.hotel + '/night' : '') + '</span>' : '');
-      err.style.display = 'none';
+      setPlace(place['place name'], place['state']);
     })
-    .catch(function() {
-      locationInfo = null;
-      fb.textContent = '';
-      err.textContent = 'Zip not found — using selected tier';
-      err.style.display = 'block';
+    .catch(function() { if (seq === placeSeq) placeFail('Zip not found — using selected tier'); })
+    .finally(function() { zipLoading = false; if (seq === placeSeq) { buildTierGrid(); updateTierNote(); } });
+}
+function lookupCity(q) {
+  var p = parsePlace(q), seq = ++placeSeq;
+  if (p.city.length < 3) return;
+  zipLoading = true; placeBusy('Finding ' + p.city + (p.st ? ', ' + p.st : '') + '...');
+  var go = p.st
+    ? fetch('https://api.zippopotam.us/us/' + p.st.toLowerCase() + '/' + encodeURIComponent(p.city.toLowerCase()))
+        .then(function (r) { if (!r.ok) throw new Error('nf'); return r.json(); })
+        .then(function (d) { var pl = d.places && d.places[0]; if (!pl) throw new Error('nf'); return [{ city: pl['place name'], st: p.st, state: d.state || US_STATES[p.st] }]; })
+    : fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&limit=8&city=' + encodeURIComponent(p.city))
+        .then(function (r) { if (!r.ok) throw new Error('net'); return r.json(); })
+        .then(function (list) {
+          var seen = {}, out = [];
+          (list || []).forEach(function (x) {
+            var a = x.address || {}, c = a.city || a.town || a.village || a.hamlet || a.municipality || p.city, st = stateCode(a.state);
+            if (!st || seen[c + st]) return; seen[c + st] = 1;
+            out.push({ city: c, st: st, state: US_STATES[st] });
+          });
+          if (!out.length) throw new Error('nf');
+          return out;
+        });
+  go.then(function (list) {
+      if (seq !== placeSeq) return;
+      if (list.length === 1) setPlace(list[0].city, list[0].state);
+      else showChoices(list.slice(0, 5));
     })
-    .finally(function() {
-      zipLoading = false; buildTierGrid(); updateTierNote();
-    });
+    .catch(function (e) {
+      if (seq !== placeSeq) return;
+      placeFail(p.st ? 'Couldn\'t find ' + p.city + ', ' + p.st + ' — check the spelling' : 'Couldn\'t find that city. Try adding the state, like Mesa, AZ');
+    })
+    .finally(function () { zipLoading = false; });
+}
+function lookupPlace(val) {
+  val = val.trim();
+  if (!val) { placeSeq++; document.getElementById('zip-feedback').textContent = ''; document.getElementById('zip-error').style.display = 'none'; locationInfo = null; buildTierGrid(); updateTierNote(); return; }
+  if (/^\d+$/.test(val)) { if (val.length === 5) lookupZip(val); else { placeSeq++; document.getElementById('zip-feedback').textContent = ''; locationInfo = null; buildTierGrid(); updateTierNote(); } return; }
+  lookupCity(val);
 }
 
 document.getElementById('zip').addEventListener('input', function() {
-  var val = this.value.replace(/\D/g, '').slice(0, 5);
-  this.value = val;
+  var val = this.value;
+  if (/^\d+$/.test(val.trim())) { val = val.replace(/\D/g, '').slice(0, 5); this.value = val; }
   clearTimeout(zipTimer);
-  zipTimer = setTimeout(function() { lookupZip(val); }, 400);
+  zipTimer = setTimeout(function() { lookupPlace(val); }, /^\d*$/.test(val.trim()) ? 400 : 900);
+});
+document.getElementById('zip').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(zipTimer); lookupPlace(this.value); this.blur(); }
 });
 
 // Pill groups
@@ -941,7 +1015,7 @@ document.getElementById('calc-btn').addEventListener('click', function() {
 
 document.getElementById('reset-edits').addEventListener('click', function() { overrides = {}; renderResults(); });
 document.getElementById('new-btn').addEventListener('click', resetAll);
-document.getElementById('print-btn').addEventListener('click', function() { window.print(); });
+document.getElementById('print-btn').addEventListener('click', function() { if (window.FGTEstimatePDF) FGTEstimatePDF.save(); else window.print(); });
 
 // Init
 buildFanGrid();
