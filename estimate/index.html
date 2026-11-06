@@ -61,6 +61,12 @@
     .custom-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
     .custom-title { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #f59e0b; }
 
+    .add-dashed { margin-top: .5rem; width: 100%; padding: .6rem; background: transparent; border: 1px dashed rgba(245,158,11,0.4); border-radius: 6px; color: #f59e0b; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+    .misc-row { display: grid; grid-template-columns: 1fr 7.5rem 2.6rem; gap: .5rem; margin-top: .5rem; align-items: center; }
+    .misc-row input { font-size: .95rem; padding: .55rem .75rem; }
+    .misc-x { height: 100%; min-height: 2.6rem; background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #9ca3af; font-size: 1rem; cursor: pointer; }
+    .pill-btn .pill-n { display: inline-block; min-width: 1.3em; margin-left: .3em; padding: 0 .3em; border-radius: 999px; background: rgba(245,158,11,.25); color: #f59e0b; font-size: .8em; }
+    .pill-btn.active .pill-n { background: rgba(0,0,0,.25); color: #000; }
     #add-custom-btn { margin-top: .5rem; width: 100%; padding: .6rem; background: transparent; border: 1px dashed rgba(245,158,11,0.4); border-radius: 6px; color: #f59e0b; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: all .2s; }
     #add-custom-btn:hover { background: rgba(245,158,11,0.08); }
 
@@ -179,7 +185,7 @@
   </div>
 
   <div class="section">
-    <div class="lbl">Install Type</div>
+    <div class="lbl">Install Type <span style="text-transform:none;letter-spacing:0;font-weight:400">(tap a type, then add its fans below)</span></div>
     <div class="pill-group" id="install-pills">
       <button class="pill-btn active" data-val="turnkey">Turnkey</button>
       <button class="pill-btn" data-val="mech_hook">Mech + Hook Up</button>
@@ -194,6 +200,14 @@
     <div id="custom-fans"></div>
     <button id="add-custom-btn">+ Add Custom Fan</button>
     <div class="fan-total" id="fan-total">Total: <strong>0 fans</strong></div>
+    <div class="sub-text" id="mix-note" style="display:none"></div>
+  </div>
+
+  <!-- Misc costs -->
+  <div class="section">
+    <div class="lbl">Miscellaneous Costs <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></div>
+    <div id="misc-list"></div>
+    <button id="add-misc-btn" type="button" class="add-dashed">+ Add Misc Cost</button>
   </div>
 
   <!-- Breakers -->
@@ -374,7 +388,11 @@ var INSTALL_LBL = {
 
 // State
 var installType = 'turnkey';
-var fanQtys = { ztech:0, zchill:0, taz:0, taz36:0 };
+var TYPES = ['turnkey','mech_hook','mech_hang'];
+function emptyQtys() { return { ztech:0, zchill:0, taz:0, taz36:0 }; }
+var qtyByType = { turnkey: emptyQtys(), mech_hook: emptyQtys(), mech_hang: emptyQtys() };
+var fanQtys = qtyByType.turnkey; // the type being edited
+var miscCosts = [];
 var customFans = [];
 var steelMode = 'none';
 var crewSize = 1;
@@ -399,19 +417,24 @@ function getTierData() {
 function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
 function ov(key, base) { return overrides[key] !== undefined ? overrides[key] : base; }
 
+function typeFans(t) { var q = qtyByType[t], n = 0; for (var id in q) n += q[id] || 0; return n; }
+function typeTaz(t) { var q = qtyByType[t]; return (q.taz || 0) + (q.taz36 || 0); }
+function typeNonTaz(t) { var q = qtyByType[t]; return (q.ztech || 0) + (q.zchill || 0); }
+function usedTypes() { return TYPES.filter(function (t) { return typeFans(t) > 0; }); }
+function customType(cf) { return cf.needsElec ? 'turnkey' : 'mech_hook'; }
 function totalFans() {
   var t = 0;
-  for (var id in fanQtys) t += fanQtys[id];
+  for (var k = 0; k < TYPES.length; k++) t += typeFans(TYPES[k]);
   for (var i = 0; i < customFans.length; i++) t += (customFans[i].qty || 0);
   return t;
 }
-function tazCount() { return (fanQtys.taz || 0) + (fanQtys.taz36 || 0); }
-function nonTazCount() { return (fanQtys.ztech || 0) + (fanQtys.zchill || 0); }
+function tazCount() { var n = 0; TYPES.forEach(function (t) { n += typeTaz(t); }); return n; }
+function nonTazCount() { var n = 0; TYPES.forEach(function (t) { n += typeNonTaz(t); }); return n; }
 
-function calcTazWorkDays() {
-  var taz = tazCount();
+function calcTazWorkDays(type) {
+  var taz = typeTaz(type);
   if (taz === 0) return 0;
-  if (installType === 'turnkey') {
+  if (type === 'turnkey') {
     var days1p = Math.ceil(taz / 2) * 2;
     if (crewSize >= 2) return Math.max(2, days1p - 1);
     return days1p;
@@ -420,17 +443,19 @@ function calcTazWorkDays() {
     return Math.max(1, Math.ceil(taz * rate));
   }
 }
-function calcNonTazWorkDays() {
-  var nf = nonTazCount();
-  for (var i = 0; i < customFans.length; i++) nf += (customFans[i].qty || 0);
+function calcNonTazWorkDays(type) {
+  var nf = typeNonTaz(type);
+  for (var i = 0; i < customFans.length; i++) if (customType(customFans[i]) === type) nf += (customFans[i].qty || 0);
   if (nf === 0) return 0;
   var shift = (crewSize - 1) * 3;
-  if (installType === 'turnkey') return Math.max(2, nf - 1 - shift);
+  if (type === 'turnkey') return Math.max(2, nf - 1 - shift);
   return Math.max(1, Math.ceil(Math.max(1, nf - shift) / 4));
 }
 function calcWorkDays() {
   if (totalFans() === 0) return 0;
-  return calcTazWorkDays() + calcNonTazWorkDays();
+  var d = 0;
+  TYPES.forEach(function (t) { d += calcTazWorkDays(t) + calcNonTazWorkDays(t); });
+  return d;
 }
 function calcDays() { return totalFans() === 0 ? 0 : 2 + calcWorkDays(); }
 
@@ -448,10 +473,26 @@ function getCityInfo(city) {
 function updateFanTotal() {
   var t = totalFans(), days = calcDays(), wd = calcWorkDays();
   var el = document.getElementById('fan-total');
+  updatePillCounts();
   if (t === 0) { el.innerHTML = 'Total: <strong>0 fans</strong>'; return; }
   el.innerHTML = 'Total: <strong>' + t + ' fan' + (t!==1?'s':'') + '</strong> &mdash; est. <strong>' + days + ' days</strong> (' + wd + ' work day' + (wd!==1?'s':'') + ' + 2 travel)';
 }
 
+var TYPE_SHORT = { turnkey:'Turnkey', mech_hook:'Mech + Hook Up', mech_hang:'Mech Hang Only' };
+function updatePillCounts() {
+  var btns = document.querySelectorAll('#install-pills .pill-btn');
+  for (var i = 0; i < btns.length; i++) {
+    var t = btns[i].getAttribute('data-val'), n = typeFans(t);
+    btns[i].innerHTML = TYPE_SHORT[t] + (n ? '<span class="pill-n">' + n + '</span>' : '');
+  }
+  var used = usedTypes(), note = document.getElementById('mix-note');
+  if (note) {
+    if (used.length > 1) {
+      note.style.display = 'block';
+      note.textContent = 'Mixed job: ' + used.map(function (t) { return typeFans(t) + ' ' + TYPE_SHORT[t]; }).join(' + ');
+    } else note.style.display = 'none';
+  }
+}
 // Fan grid
 function buildFanGrid() {
   var grid = document.getElementById('fan-grid');
@@ -748,8 +789,9 @@ function wirePills(groupId, callback) {
 
 wirePills('install-pills', function(val) {
   installType = val;
+  fanQtys = qtyByType[val];
   document.getElementById('install-desc').textContent = INSTALL_DESC[val];
-  buildFanGrid(); overrides = {};
+  buildFanGrid(); updateFanTotal();
   document.getElementById('results').style.display = 'none';
 });
 wirePills('steel-pills', function(val) {
@@ -820,10 +862,12 @@ function recalc() {
   var fans = totalFans(), taz = tazCount(), nonTaz = nonTazCount();
 
   var laborTotal = 0;
-  for (var i = 0; i < MODELS.length; i++) {
-    var m = MODELS[i], qty = fanQtys[m.id]||0;
-    if (qty > 0) laborTotal += ov('labor_' + m.id, qty * m.labor[installType]);
-  }
+  TYPES.forEach(function (t) {
+    for (var i = 0; i < MODELS.length; i++) {
+      var m = MODELS[i], qty = qtyByType[t][m.id]||0;
+      if (qty > 0) laborTotal += ov('labor_' + t + '_' + m.id, qty * m.labor[t]);
+    }
+  });
   for (var c = 0; c < customFans.length; c++) {
     var cf = customFans[c];
     if ((cf.qty||0) > 0) laborTotal += ov('labor_custom_' + c, (cf.qty||0) * (cf.labor||0));
@@ -833,11 +877,9 @@ function recalc() {
   var steelCost = nonTaz * steelRate;
   var tazHw = taz * 170;
 
-  var elecFans = installType==='turnkey' ? fans : 0;
-  if (installType !== 'turnkey') {
-    for (var ci = 0; ci < customFans.length; ci++) {
-      if (customFans[ci].needsElec) elecFans += (customFans[ci].qty||0);
-    }
+  var elecFans = typeFans('turnkey');
+  for (var ci = 0; ci < customFans.length; ci++) {
+    if (customFans[ci].needsElec) elecFans += (customFans[ci].qty||0);
   }
   var elecCost = elecFans * 700;
   var breakerTotal = breakerQty * breakerCost;
@@ -863,6 +905,9 @@ function recalc() {
     var cfj = customFans[cj];
     if ((cfj.qty||0) > 0 && (cfj.material||0) > 0) costTotal += ov('mat_custom_'+cj, (cfj.qty||0)*(cfj.material||0));
   }
+  for (var mz = 0; mz < miscCosts.length; mz++) {
+    if ((miscCosts[mz].amount||0) > 0) costTotal += ov('misc_'+mz, miscCosts[mz].amount);
+  }
 
   var combined = laborTotal + costTotal;
   var suggested = combined / 0.7;
@@ -880,16 +925,19 @@ function renderResults() {
   var days = calcDays(), wd = calcWorkDays(), td = getTierData();
   var fans = totalFans(), taz = tazCount(), nonTaz = nonTazCount();
 
-  var parts = [];
-  for (var i = 0; i < MODELS.length; i++) {
-    if (fanQtys[MODELS[i].id] > 0) parts.push(fanQtys[MODELS[i].id] + 'x ' + MODELS[i].name);
-  }
+  var parts = [], used = usedTypes(), mixed = used.length > 1;
+  TYPES.forEach(function (t) {
+    for (var i = 0; i < MODELS.length; i++) {
+      var q = qtyByType[t][MODELS[i].id];
+      if (q > 0) parts.push(q + 'x ' + MODELS[i].name + (mixed ? ' (' + TYPE_SHORT[t] + ')' : ''));
+    }
+  });
   for (var ci = 0; ci < customFans.length; ci++) {
     var cf = customFans[ci];
     if ((cf.qty||0) > 0) parts.push(cf.qty + 'x ' + (cf.name||'Custom Fan '+(ci+1)));
   }
 
-  document.getElementById('res-desc').textContent = INSTALL_LBL[installType] + ' · ' + fans + ' fan' + (fans!==1?'s':'') + ' · ' + crewSize + ' person' + (crewSize!==1?'s':'') + ' · ' + days + ' days';
+  document.getElementById('res-desc').textContent = (mixed ? 'Mixed Install' : INSTALL_LBL[used[0] || installType]) + ' · ' + fans + ' fan' + (fans!==1?'s':'') + ' · ' + crewSize + ' person' + (crewSize!==1?'s':'') + ' · ' + days + ' days';
   document.getElementById('res-fans').textContent = parts.join(', ');
   var cityEl = document.getElementById('res-city');
   cityEl.innerHTML = locationInfo
@@ -898,10 +946,12 @@ function renderResults() {
 
   // Labor
   var laborDiv = document.getElementById('res-labor'); laborDiv.innerHTML = '';
-  for (var mi = 0; mi < MODELS.length; mi++) {
-    var mod = MODELS[mi], qty = fanQtys[mod.id]||0;
-    if (qty > 0) addLine(laborDiv, 'labor_'+mod.id, mod.name, qty+' fan'+(qty!==1?'s':'')+' x '+fmt(mod.labor[installType]), qty*mod.labor[installType], null);
-  }
+  TYPES.forEach(function (t) {
+    for (var mi = 0; mi < MODELS.length; mi++) {
+      var mod = MODELS[mi], qty = qtyByType[t][mod.id]||0;
+      if (qty > 0) addLine(laborDiv, 'labor_'+t+'_'+mod.id, mod.name + ' · ' + TYPE_SHORT[t], qty+' fan'+(qty!==1?'s':'')+' x '+fmt(mod.labor[t]), qty*mod.labor[t], null);
+    }
+  });
   for (var cfi = 0; cfi < customFans.length; cfi++) {
     var cfc = customFans[cfi];
     if ((cfc.qty||0) > 0) addLine(laborDiv, 'labor_custom_'+cfi, cfc.name||'Custom Fan '+(cfi+1), cfc.qty+' fan'+(cfc.qty!==1?'s':'')+' x '+fmt(cfc.labor||0), (cfc.qty||0)*(cfc.labor||0), null);
@@ -911,11 +961,9 @@ function renderResults() {
   var steelRate = steelMode==='standard'?150:steelMode==='double'?400:0;
   var steelCost = nonTaz * steelRate;
   var tazHw = taz * 170;
-  var elecFans = installType==='turnkey' ? fans : 0;
-  if (installType !== 'turnkey') {
-    for (var eci = 0; eci < customFans.length; eci++) {
-      if (customFans[eci].needsElec) elecFans += (customFans[eci].qty||0);
-    }
+  var elecFans = typeFans('turnkey');
+  for (var eci = 0; eci < customFans.length; eci++) {
+    if (customFans[eci].needsElec) elecFans += (customFans[eci].qty||0);
   }
   var elecCost = elecFans * 700;
   var breakerTotal = breakerQty * breakerCost;
@@ -943,6 +991,11 @@ function renderResults() {
     if ((mcf.qty||0)>0 && (mcf.material||0)>0) addLine(costDiv,'mat_custom_'+mci,(mcf.name||'Custom Fan '+(mci+1))+' Materials',mcf.qty+' fan'+(mcf.qty!==1?'s':'')+' x '+fmt(mcf.material||0),(mcf.qty||0)*(mcf.material||0),'#a78bfa');
   }
 
+  for (var mx = 0; mx < miscCosts.length; mx++) {
+    var mc = miscCosts[mx];
+    if ((mc.amount||0) > 0) addLine(costDiv,'misc_'+mx, mc.name || 'Miscellaneous', 'Misc cost', mc.amount, null);
+  }
+
   document.getElementById('reset-edits-row').style.display = 'none';
   recalc();
 
@@ -957,7 +1010,9 @@ function renderResults() {
 function resetAll() {
   // Reset state
   installType = 'turnkey';
-  fanQtys = { ztech:0, zchill:0, taz:0, taz36:0 };
+  qtyByType = { turnkey: emptyQtys(), mech_hook: emptyQtys(), mech_hang: emptyQtys() };
+  fanQtys = qtyByType.turnkey;
+  miscCosts = []; buildMisc();
   customFans = [];
   steelMode = 'none';
   crewSize = 1;
@@ -1023,6 +1078,27 @@ buildCustomFans();
 buildTierGrid();
 updateTierNote();
 updateFanTotal();
+
+// Misc costs
+function buildMisc() {
+  var list = document.getElementById('misc-list'); list.innerHTML = '';
+  miscCosts.forEach(function (m, i) {
+    var row = document.createElement('div'); row.className = 'misc-row';
+    row.innerHTML = '<input type="text" class="mc-name" placeholder="What is it? (permit, dumpster…)" maxlength="40">' +
+      '<input type="number" class="mc-amt" inputmode="decimal" min="0" placeholder="$ amount">' +
+      '<button type="button" class="misc-x" aria-label="Remove">✕</button>';
+    row.querySelector('.mc-name').value = m.name || '';
+    row.querySelector('.mc-amt').value = m.amount || '';
+    row.querySelector('.mc-name').addEventListener('input', function () { miscCosts[i].name = this.value.trim(); document.getElementById('results').style.display = 'none'; });
+    row.querySelector('.mc-amt').addEventListener('input', function () { miscCosts[i].amount = parseFloat(this.value) || 0; delete overrides['misc_'+i]; document.getElementById('results').style.display = 'none'; });
+    row.querySelector('.misc-x').addEventListener('click', function () { miscCosts.splice(i, 1); overrides = {}; buildMisc(); document.getElementById('results').style.display = 'none'; });
+    list.appendChild(row);
+  });
+}
+document.getElementById('add-misc-btn').addEventListener('click', function () {
+  miscCosts.push({ name: '', amount: 0 }); buildMisc();
+  var names = document.querySelectorAll('#misc-list .mc-name'); if (names.length) names[names.length - 1].focus();
+});
 </script>
 <script>
 // ── Auto-save: keeps the estimate on this phone so a reload or closed tab never wipes it ──
@@ -1030,7 +1106,7 @@ updateFanTotal();
   var KEY = 'fg_estimator_autosave_v1';
   function snapshot() {
     return {
-      installType: installType, fanQtys: fanQtys, customFans: customFans, steelMode: steelMode,
+      installType: installType, qtyByType: qtyByType, miscCosts: miscCosts, customFans: customFans, steelMode: steelMode,
       crewSize: crewSize, travelMode: travelMode, miles: miles, breakerQty: breakerQty,
       breakerCost: breakerCost, manualTier: manualTier, locationInfo: locationInfo,
       zip: document.getElementById('zip').value,
@@ -1052,7 +1128,14 @@ updateFanTotal();
     var d; try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { return; }
     if (!d) return;
     installType = d.installType || 'turnkey';
-    fanQtys = d.fanQtys || fanQtys;
+    if (d.qtyByType) {
+      TYPES.forEach(function (t) { qtyByType[t] = Object.assign(emptyQtys(), d.qtyByType[t] || {}); });
+    } else if (d.fanQtys) {
+      qtyByType[installType] = Object.assign(emptyQtys(), d.fanQtys);
+    }
+    fanQtys = qtyByType[installType];
+    miscCosts = Array.isArray(d.miscCosts) ? d.miscCosts : [];
+    buildMisc();
     customFans = Array.isArray(d.customFans) ? d.customFans : [];
     steelMode = d.steelMode || 'none';
     crewSize = d.crewSize || 1;
