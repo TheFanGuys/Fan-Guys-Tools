@@ -36,7 +36,17 @@ Circuit Summary shows Planning only - not verified, rounding 125% of the *refere
 
 ## Offline updates
 
-Service-worker cache is `fanguys-field-live-1`. It registers relative to the folder. Settings -> Check for app updates asks the worker to update; close all app tabs and reopen to activate a waiting version. Test an airplane-mode cold open on your iPhone.
+Service-worker cache is `fanguys-field-live-3`. It registers relative to the folder. Settings -> Check for app updates asks the worker to update; close all app tabs and reopen to activate a waiting version. Test an airplane-mode cold open on your iPhone.
+
+## Field navigation in this revision
+
+On Home, **Continue** opens the last tool used for the current project. In a tool, tap the project name at the top to switch projects. The back arrow returns to the project dashboard. The **Tools** control opens all five tools in one sheet. Survey uses Job, Fans, Access, Photos, Clearance, Review; Estimate uses Fans, Costs, Travel, Review. **Next section** advances the current task. Layout keeps its drawing dock at the bottom and moves **Tools** into the header so the two bars do not stack. Its drawing engine and saved layout data are unchanged by this navigation edit.
+
+The last-tool preference is saved as `v2:fgt-last-tool` in the isolated V2 copy (the namespace switch controls the prefix); backup includes it. This is a new preference key, not a saved job format change. Estimates use the same input and calculation engine, but the on-screen input sections are reordered into Fans, Costs, Travel. No saved project data is rewritten by this change.
+
+## Field List and visual help
+
+Field List opens with compact categories, a local illustrated guide, search, a counted-item filter and a selected-item summary. Tap a category to see its materials; search expands matching categories. Product illustrations are bundled SVG components and remain visible offline. Job details are collapsed but editable. Clear list removes quantities and custom items while keeping the job details. The materials save key and its JSON fields are unchanged. Tool headers include a `?` quick guide; Layout has the same guide in its Tools menu. No account, external asset request, or runtime dependency was added. See `DESIGN-AND-TOOLS.md` for reviewed $0 tools and limits.
 
 ## Your work
 
@@ -70,6 +80,6 @@ After changing files in the future, change CACHE in sw.js to a new version and u
 
 The original modules remain. The functional audit also repairs Layout persistence, Undo, layers, tap attachments, routed wire takeoffs and export projection; Survey supply/protection assumptions; and Materials quantity/export behavior. Manufacturer content has not been exhaustively revalidated.
 
-47 source-level regression checks pass, including 23 Layout checks. Browser interaction verified placement, reload, move/Undo, wall drawing, layer visibility and JSON export. Real iOS hardware, HTTPS offline cold-start and native PDF/share delivery remain release gates. Use one editing tab per tool. See TEST-REPORT.md for the evidence and limits. Optional annual-maintenance fan records/QR labels are not included yet.
+51 source-level regression checks pass, including 25 Layout checks. Browser interaction verified navigation between Survey and Estimate, the tool sheet and Layout controls at desktop width. Earlier browser interaction verified placement, reload, move/Undo, wall drawing, layer visibility and JSON export. Real iOS hardware, HTTPS offline cold-start, mobile viewport and native PDF/share delivery remain release gates. Use one editing tab per tool. See TEST-REPORT.md for the evidence and limits. Optional annual-maintenance fan records/QR labels are not included yet.
 
 See TEST-REPORT.md for verification and remaining device checks.

@@ -7,7 +7,7 @@
 <script src="../shared/pdf-delivery.js"></script>
 <script src="../shared/fgt.js" data-tool="materials"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, " />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <title>Fan Guys Materials</title>
@@ -23,6 +23,7 @@
     .cat-img-wrap { width: 42px; height: 42px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
   </style>
 <link rel="stylesheet" href="../shared/workspace.css">
+<link rel="stylesheet" href="../shared/materials.css">
 <script src="../shared/workspace.js" defer></script>
 </head>
 <body>
@@ -253,10 +254,8 @@
       return null;
     }
 
-    function CatPhoto({ src, category }) {
-      const [failed, setFailed] = useState(false);
-      if (failed || !src) return FALLBACKS[category] || <span style={{fontSize:22}}>⚡</span>;
-      return <img className="cat-img" src={src} alt={category} onError={()=>setFailed(true)} />;
+    function CatPhoto({ category }) {
+      return FALLBACKS[category] || <span aria-hidden="true" style={{fontSize:22}}>⚡</span>;
     }
 
     // ── Export: plain text (only filled items) ────────────────────────────────
@@ -339,18 +338,18 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
     }
 
     // ── Stepper ───────────────────────────────────────────────────────────────
-    function Stepper({ value, onChange }) {
+    function Stepper({ value, onChange, label="item" }) {
       const active = (value||0) > 0;
       return (
         <div style={{display:"flex",alignItems:"center",flexShrink:0}}>
-          <button onClick={()=>onChange(Math.max(0,(value||0)-1))} style={{
+          <button aria-label={"Remove one "+label} onClick={()=>onChange(Math.max(0,(value||0)-1))} style={{
             width:38,height:42,border:"1.5px solid #e5e7eb",borderRight:"none",
             borderRadius:"8px 0 0 8px",background:"var(--ws-raised)",color:"var(--ws-text)",
             fontSize:20,fontWeight:700,cursor:"pointer",display:"flex",
             alignItems:"center",justifyContent:"center",
             opacity:active?1:0.35,fontFamily:"inherit",
           }}>−</button>
-          <input type="number" min="0" value={value||""} placeholder="0"
+          <input type="number" min="0" value={value||""} placeholder="0" aria-label={"Quantity for "+label}
             onChange={e=>onChange(Math.max(0,parseInt(e.target.value)||0))}
             style={{
               width:52,height:42,textAlign:"center",border:"1.5px solid #e5e7eb",
@@ -359,7 +358,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
               color:active?"#1d4ed8":"var(--ws-muted)",fontWeight:active?700:400,
             }}
           />
-          <button onClick={()=>onChange((value||0)+1)} style={{
+          <button aria-label={"Add one "+label} onClick={()=>onChange((value||0)+1)} style={{
             width:38,height:42,border:"1.5px solid",
             borderRadius:"0 8px 8px 0",
             background:active?"var(--ws-accent)":"var(--ws-raised)",
@@ -373,21 +372,22 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
     }
 
     // ── Category Section ──────────────────────────────────────────────────────
-    function CategorySection({ category, img, items, quantities, onQtyChange }) {
-      const [open, setOpen] = useState(true);
+    function CategorySection({ category, items, quantities, onQtyChange, forceOpen }) {
+      const [open, setOpen] = useState(false);
+      useEffect(()=>{if(forceOpen)setOpen(true);},[forceOpen]);
       const filled = items.map(norm).filter(i=>(quantities[i.name]||0)>0).length;
       return (
-        <div style={{background:"var(--ws-panel)",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
-          <button onClick={()=>setOpen(o=>!o)} style={{
+        <div id={"cat-"+category.toLowerCase().replace(/[^a-z0-9]+/g,"-")} className="material-category">
+          <button aria-expanded={open} onClick={()=>setOpen(o=>!o)} style={{
             width:"100%",background:"none",border:"none",padding:"12px 16px",
             display:"flex",alignItems:"center",gap:12,cursor:"pointer",
             borderBottom:open?"1px solid #f3f4f6":"none",
           }}>
-            <div className="cat-img-wrap"><CatPhoto src={img} category={category}/></div>
+            <div className="cat-img-wrap"><CatPhoto category={category}/></div>
             <span style={{fontSize:15,fontWeight:700,color:"var(--ws-text)",flex:1,fontFamily:"'Field Sans',Arial,sans-serif",textAlign:"left"}}>{category}</span>
             <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
               {filled>0 && (
-                <span style={{fontSize:11,fontWeight:600,color:"#1d4ed8",background:"#eff6ff",borderRadius:10,padding:"2px 8px",border:"1px solid #bfdbfe",fontFamily:"'Field Sans',Arial,sans-serif"}}>
+                <span className="material-count">
                   {filled} entered
                 </span>
               )}
@@ -402,16 +402,16 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
             const hint = unitHint(item);
             const liveLabel = qty > 0 ? qtyDisplay(item, qty) : null;
             return (
-              <div key={item.name} style={{
+              <div key={item.name} className={qty>0?"material-row is-filled":"material-row"} style={{
                 display:"flex",alignItems:"center",justifyContent:"space-between",
                 padding:"10px 16px",gap:12,
-                background:qty>0?"#eff6ff":idx%2===0?"var(--ws-panel)":"#fafafa",
-                borderBottom:"1px solid #f3f4f6",
+                background:qty>0?"var(--ws-soft)":"var(--ws-panel)",
+                borderBottom:"1px solid var(--ws-line)",
               }}>
                 <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                     {swatch && <span style={{width:11,height:11,borderRadius:"50%",background:swatch,flexShrink:0,border:"1.5px solid rgba(0,0,0,0.15)",display:"inline-block"}}/>}
-                    <span style={{fontSize:14,lineHeight:1.35,color:qty>0?"#1e3a5f":"#374151",fontWeight:qty>0?600:400,fontFamily:"'Field Sans',Arial,sans-serif"}}>
+                    <span style={{fontSize:14,lineHeight:1.35,color:"var(--ws-text)",fontWeight:qty>0?700:500,fontFamily:"'Field Sans',Arial,sans-serif"}}>
                       {item.name}
                     </span>
                     {item.name==="Caddy Box Clip M24S" && qty>0 && (
@@ -426,7 +426,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                     </span>
                   )}
                 </div>
-                <Stepper value={qty} onChange={v=>onQtyChange(item.name, v)}/>
+                <Stepper label={item.name} value={qty} onChange={v=>onQtyChange(item.name, v)}/>
               </div>
             );
           })}
@@ -447,14 +447,14 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
         <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
           <div onClick={e=>e.stopPropagation()} style={{background:"var(--ws-panel)",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:920,maxHeight:"85dvh",display:"flex",flexDirection:"column",paddingTop:12}}>
             <div style={{width:36,height:4,background:"var(--ws-line)",borderRadius:2,margin:"0 auto 12px"}}/>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px 12px",borderBottom:"1px solid #f3f4f6",flexShrink:0}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px 12px",borderBottom:"1px solid var(--ws-line)",flexShrink:0}}>
               <div>
                 <h2 style={{fontSize:20,fontWeight:800,color:"var(--ws-text)",fontFamily:"'Field Sans',Arial,sans-serif"}}>Preview</h2>
                 <div style={{fontSize:12,color:"var(--ws-muted)",fontFamily:"'Field Sans',Arial,sans-serif"}}>{totalItems} item{totalItems!==1?"s":""} selected</div>
               </div>
               <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,color:"var(--ws-muted)",cursor:"pointer",padding:4}}>✕</button>
             </div>
-            <div style={{padding:"10px 20px",borderBottom:"1px solid #f3f4f6",flexShrink:0}}>
+            <div style={{padding:"10px 20px",borderBottom:"1px solid var(--ws-line)",flexShrink:0}}>
               <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--ws-muted)",fontFamily:"'Field Sans',Arial,sans-serif"}}>
                 <span><strong style={{color:"var(--ws-text)"}}>Job:</strong> {jobName||"—"}</span>
                 <span><strong style={{color:"var(--ws-text)"}}>Loc:</strong> {jobLocation||"—"}</span>
@@ -471,7 +471,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
               {filledCats.map(({ category, img, rows }) => (
                 <div key={category} style={{marginBottom:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                    <div style={{width:20,height:20,borderRadius:5,overflow:"hidden",flexShrink:0,background:"#f1f5f9",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:20,height:20,borderRadius:5,overflow:"hidden",flexShrink:0,background:"var(--ws-raised)",display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <CatPhoto src={img} category={category}/>
                     </div>
                     <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:"var(--ws-muted)",textTransform:"uppercase",fontFamily:"'Field Sans',Arial,sans-serif"}}>{category}</div>
@@ -480,12 +480,12 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                     const qty = quantities[item.name];
                     const swatch = getSwatch(item.name);
                     return (
-                      <div key={item.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid #f3f4f6"}}>
+                      <div key={item.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid var(--ws-line)"}}>
                         <div style={{display:"flex",alignItems:"center",gap:7}}>
                           {swatch && <span style={{width:9,height:9,borderRadius:"50%",background:swatch,flexShrink:0,border:"1.5px solid rgba(0,0,0,0.1)",display:"inline-block"}}/>}
-                          <span style={{fontSize:13,color:"#1e3a5f",fontFamily:"'Field Sans',Arial,sans-serif"}}>{item.name}</span>
+                          <span style={{fontSize:13,color:"var(--ws-text)",fontFamily:"'Field Sans',Arial,sans-serif"}}>{item.name}</span>
                         </div>
-                        <span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",textAlign:"right",fontFamily:"'Field Sans',Arial,sans-serif",flexShrink:0,paddingLeft:12}}>
+                        <span style={{fontSize:13,fontWeight:700,color:"var(--ws-accent)",textAlign:"right",fontFamily:"'Field Sans',Arial,sans-serif",flexShrink:0,paddingLeft:12}}>
                           {qtyDisplay(item, qty)}
                         </span>
                       </div>
@@ -497,16 +497,16 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                 <div style={{marginBottom:16}}>
                   <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:"var(--ws-muted)",textTransform:"uppercase",marginBottom:6,fontFamily:"'Field Sans',Arial,sans-serif"}}>Custom Items</div>
                   {filledCustoms.map(c => (
-                    <div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid #f3f4f6"}}>
-                      <span style={{fontSize:13,color:"#1e3a5f",fontFamily:"'Field Sans',Arial,sans-serif"}}>{c.name}</span>
-                      <span style={{fontSize:13,fontWeight:700,color:"#1d4ed8",fontFamily:"'Field Sans',Arial,sans-serif"}}>{c.qty}</span>
+                    <div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid var(--ws-line)"}}>
+                      <span style={{fontSize:13,color:"var(--ws-text)",fontFamily:"'Field Sans',Arial,sans-serif"}}>{c.name}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:"var(--ws-accent)",fontFamily:"'Field Sans',Arial,sans-serif"}}>{c.qty}</span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div style={{padding:"12px 20px 20px",borderTop:"1px solid #e5e7eb",display:"flex",gap:10,flexShrink:0}}>
+            <div style={{padding:"12px 20px 20px",borderTop:"1px solid var(--ws-line)",display:"flex",gap:10,flexShrink:0}}>
               <button onClick={onClose} style={{flex:1,background:"var(--ws-bg)",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:600,color:"var(--ws-muted)",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>Close</button>
               <button onClick={onExport} style={{flex:2,background:"var(--ws-accent)",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,color:"var(--ws-panel)",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>Export ↑</button>
             </div>
@@ -554,14 +554,14 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
               </p>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                 {tiles.map(({icon,label,sub,fn})=>(
-                  <button key={label} onClick={fn} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"var(--ws-raised)",border:"1.5px solid #e5e7eb",borderRadius:12,padding:"16px 12px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",textAlign:"center"}}>
+                  <button key={label} onClick={fn} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"var(--ws-raised)",border:"1.5px solid var(--ws-line)",borderRadius:12,padding:"16px 12px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",textAlign:"center"}}>
                     <span style={{fontSize:24,marginBottom:2}}>{icon}</span>
                     <span style={{fontSize:14,fontWeight:700,color:"var(--ws-text)"}}>{label}</span>
                     <span style={{fontSize:11,color:"var(--ws-muted)"}}>{sub}</span>
                   </button>
                 ))}
               </div>
-              <button onClick={pdf} style={{width:"100%",display:"flex",alignItems:"center",gap:14,background:"var(--ws-raised)",border:"1.5px solid #e5e7eb",borderRadius:12,padding:"14px 18px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",marginBottom:10,textAlign:"left"}}>
+              <button onClick={pdf} style={{width:"100%",display:"flex",alignItems:"center",gap:14,background:"var(--ws-raised)",border:"1.5px solid var(--ws-line)",borderRadius:12,padding:"14px 18px",cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif",marginBottom:10,textAlign:"left"}}>
                 <span style={{fontSize:22}}>🖨</span>
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:"var(--ws-text)"}}>Save / Share PDF</div>
@@ -579,8 +579,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
     function nextMaterialQuantities(q,item,val){const next={...q,[item]:Math.max(0,Number(val)||0)};if(item==='Caddy Box Clip M24S'){const old=q['1/4" Nut']||0;if(old===0||old===(q[item]||0))next['1/4" Nut']=next[item];}return next;}
     function App() {
       const [saved] = useState(loadSaved);
-      const [jobName, setJobName]           = useState(saved.jobName || "");
-      const [jobLocation, setJobLocation]   = useState(saved.jobLocation || "");
+      const [jobName, setJobName]           = useState(saved.jobName || FGTStore.current()?.name || "");
+      const [jobLocation, setJobLocation]   = useState(saved.jobLocation || [FGTStore.current()?.street,FGTStore.current()?.city,FGTStore.current()?.state].filter(Boolean).join(', '));
       const [quantities, setQuantities]     = useState(saved.quantities || {});
       const [customs, setCustoms]           = useState(Array.isArray(saved.customs) && saved.customs.length ? saved.customs : [{id:1,name:"",qty:0}]);
       // Auto-save to this phone so a reload or closed tab never wipes the list
@@ -590,6 +590,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       const [modal, setModal]               = useState(null);
       const [filterFilled, setFilterFilled] = useState(false);
       const [search, setSearch] = useState("");
+      const [guideOpen, setGuideOpen] = useState(false);
 
       const BOX_CLIP = 'Caddy Box Clip M24S';
       const CLIP_NUT  = '1/4" Nut';
@@ -603,8 +604,8 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
         + customs.filter(c=>c.name.trim()&&c.qty>0).length;
 
       const clearAll = ()=>{
-        if(window.confirm("Clear all quantities and job info?")){
-          setQuantities({});setCustoms([{id:1,name:"",qty:0}]);setJobName("");setJobLocation("");
+        if(window.confirm("Clear all material quantities and custom items for this project? Job details stay.")){
+          setQuantities({});setCustoms([{id:1,name:"",qty:0}]);
         }
       };
 
@@ -613,31 +614,27 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
       const labelStyle = {display:"block",fontSize:11,fontWeight:600,color:"var(--ws-muted)",marginBottom:5,fontFamily:"'Field Sans',Arial,sans-serif"};
 
       return (
-        <div style={{minHeight:"100vh",background:"var(--ws-bg)",maxWidth:920,margin:"0 auto"}}>
+        <div className="materials-app">
 
           {/* Header */}
-          <header style={{background:"var(--ws-text)",padding:"14px 20px",position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <img src="../shared/mark.png" alt="" style={{width:30,height:30,borderRadius:8}}/>
-                <span style={{fontSize:20,fontWeight:800,color:"var(--ws-panel)",letterSpacing:-0.5,fontFamily:"'Field Sans',Arial,sans-serif"}}>Field List</span>
-              </div>
-              <div style={{fontSize:11,color:"var(--ws-muted)",letterSpacing:0.5,marginTop:1,fontFamily:"'Field Sans',Arial,sans-serif"}}>Electrical Material Tracker</div>
-            </div>
-            {totalFilled>0 && (
-              <div style={{background:"var(--ws-accent)",color:"var(--ws-panel)",borderRadius:20,padding:"4px 14px",fontSize:13,fontWeight:700,fontFamily:"'Field Sans',Arial,sans-serif"}}>
-                {totalFilled} item{totalFilled!==1?"s":""}
-              </div>
-            )}
+          <header className="material-hero">
+            <div className="material-eyebrow">FIELD TAKEOFF <span>·</span> SAVED ON THIS DEVICE</div>
+            <div className="material-hero-main"><div><h1>Field List</h1><p>Count what you need. Review before you share.</p></div><button className="material-review" onClick={()=>setModal('preview')}><b>{totalFilled}</b><span>items<br/>selected</span><span aria-hidden="true">↗</span></button></div>
           </header>
 
-          <div style={{padding:"14px 12px"}}>
+          <div className="material-content">
+
+            <section className="material-tip">
+              <div className="material-tip-heading"><div><span>QUICK GUIDE</span><strong>A takeoff in three moves</strong></div><button onClick={()=>setGuideOpen(v=>!v)} aria-expanded={guideOpen}>{guideOpen?'Hide guide':'See how ↗'}</button></div>
+              {guideOpen && <div className="material-guide-grid">
+                <div className="material-guide-card"><svg viewBox="0 0 140 60" aria-hidden="true"><rect x="14" y="9" width="112" height="42" rx="6" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M27 22h42M27 32h66M27 42h48" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/><circle cx="108" cy="30" r="9" fill="none" stroke="currentColor" strokeWidth="2"/></svg><b>1 · Find</b><p>Search a material or tap a category. Your saved quantities stay put when you filter.</p></div>
+                <div className="material-guide-card"><svg viewBox="0 0 140 60" aria-hidden="true"><rect x="16" y="12" width="32" height="34" rx="5" fill="none" stroke="currentColor" strokeWidth="2"/><rect x="54" y="12" width="32" height="34" rx="5" fill="none" stroke="currentColor" strokeWidth="2"/><rect x="92" y="12" width="32" height="34" rx="5" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M27 29h10M64 29h12M70 23v12M102 29h12M108 23v12" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg><b>2 · Count</b><p>Use + / − or enter a number. EMT is counted in 10 ft sticks; flex and rod are entered in feet.</p></div>
+                <div className="material-guide-card"><svg viewBox="0 0 140 60" aria-hidden="true"><path d="M37 9h52l14 14v29H37z" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M89 9v14h14M50 34h40M50 43h28" stroke="currentColor" strokeWidth="2"/><path d="M112 34l9 9m0 0l-9 9m9-9H85" fill="none" stroke="currentColor" strokeWidth="2"/></svg><b>3 · Review</b><p>Preview shows counted items only. Export a PDF or use the iPhone share sheet.</p></div>
+              </div>}
+            </section>
 
             {/* Job Info */}
-            <div style={{background:"var(--ws-panel)",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"var(--ws-muted)",padding:"12px 16px 10px",borderBottom:"1px solid #f3f4f6",fontFamily:"'Field Sans',Arial,sans-serif"}}>
-                Job Information
-              </div>
+            <details className="material-job"><summary><span>Job details <small>{jobName||'Add a job name'}</small></span><span aria-hidden="true">⌄</span></summary>
               <div style={{padding:"12px 16px 16px",display:"flex",flexDirection:"column",gap:10}}>
                 <div>
                   <label style={labelStyle}>Job Name</label>
@@ -647,11 +644,10 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                   <label style={labelStyle}>Location / Address</label>
                   <input style={inputStyle} placeholder="e.g. 123 Main St, Suite 400" value={jobLocation} onChange={e=>setJobLocation(e.target.value)}/>
                 </div>
-              </div>
-            </div>
+              </div></details>
 
             {/* Search */}
-            <div style={{position:"relative",marginBottom:10}}>
+            <div className="material-search" style={{position:"relative",marginBottom:10}}>
               <span style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"var(--ws-muted)",pointerEvents:"none"}}>🔍</span>
               <input
                 style={{display:"block",width:"100%",border:"1.5px solid #e5e7eb",borderRadius:10,fontSize:15,color:"var(--ws-text)",padding:"11px 12px 11px 40px",fontFamily:"'Field Sans',Arial,sans-serif",outline:"none",background:"var(--ws-panel)",boxSizing:"border-box"}}
@@ -666,11 +662,13 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
 
             {/* Toolbar */}
             <div style={{display:"flex",gap:8,marginBottom:10}}>
-              <button onClick={()=>setFilterFilled(v=>!v)} style={{flex:1,background:filterFilled?"#eff6ff":"var(--ws-panel)",border:filterFilled?"1.5px solid #bfdbfe":"1.5px solid #e5e7eb",color:filterFilled?"#1d4ed8":"var(--ws-muted)",borderRadius:8,padding:"10px 12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>
-                {filterFilled?"● Filled only":"○ All items"}
+              <button className={filterFilled?'material-filter active':'material-filter'} onClick={()=>setFilterFilled(v=>!v)}>
+                {filterFilled?"✓ Counted items":"All materials"}
               </button>
-              <button onClick={clearAll} style={{flex:1,background:"var(--ws-panel)",border:"1.5px solid #e5e7eb",color:"var(--ws-muted)",borderRadius:8,padding:"10px 12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Field Sans',Arial,sans-serif"}}>✕ Clear all</button>
+              <button className="material-clear" onClick={clearAll}>Clear list</button>
             </div>
+
+            {!search && !filterFilled && <nav className="material-jumps" aria-label="Material categories">{MATERIALS.map(({category})=><a key={category} href={'#cat-'+category.toLowerCase().replace(/[^a-z0-9]+/g,'-')}>{category}</a>)}</nav>}
 
             {/* Categories */}
             {MATERIALS.map(({category,img,items})=>{
@@ -678,11 +676,13 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
               if (filterFilled) visible = visible.filter(i=>(quantities[norm(i).name]||0)>0);
               if (search.trim()) {
                 const q = search.trim().toLowerCase();
-                visible = visible.filter(i=>norm(i).name.toLowerCase().includes(q));
+                visible = category.toLowerCase().includes(q)?visible:visible.filter(i=>norm(i).name.toLowerCase().includes(q));
               }
               if (visible.length===0) return null;
-              return <CategorySection key={category} category={category} img={img} items={visible} quantities={quantities} onQtyChange={setQty}/>;
+              return <CategorySection key={category} category={category} items={visible} forceOpen={!!search.trim()||filterFilled} quantities={quantities} onQtyChange={setQty}/>;
             })}
+            {filterFilled && totalFilled===0 && <p className="material-empty">No items counted yet. Switch to All materials to start.</p>}
+            {search && !MATERIALS.some(({category,items})=>category.toLowerCase().includes(search.trim().toLowerCase())||items.some(i=>norm(i).name.toLowerCase().includes(search.trim().toLowerCase()))) && <p className="material-empty">No catalog matches. Add it under Custom Items below.</p>}
 
             {/* Custom Items */}
             <div style={{background:"var(--ws-panel)",borderRadius:14,marginBottom:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.07)"}}>
@@ -694,7 +694,7 @@ footer{margin-top:16px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;c
                       <label style={labelStyle}>Item {idx+1}</label>
                       <input style={inputStyle} placeholder="Describe the material…" value={item.name} onChange={e=>updateCustom(item.id,"name",e.target.value)}/>
                     </div>
-                    <Stepper value={item.qty} onChange={v=>updateCustom(item.id,"qty",v)}/>
+                    <Stepper label={item.name||"custom item"} value={item.qty} onChange={v=>updateCustom(item.id,"qty",v)}/>
                     {customs.length>1 && (
                       <button onClick={()=>removeCustom(item.id)} style={{background:"none",border:"none",color:"var(--ws-line)",fontSize:18,cursor:"pointer",paddingBottom:8}}>✕</button>
                     )}

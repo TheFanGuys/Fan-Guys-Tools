@@ -2,7 +2,7 @@
 (function(){
  'use strict';
  const scoped=['fg_sitesurvey_autosave_v1','fg_estimator_autosave_v1','fg_materials_autosave_v1','fanlayout.v1','fanGuysParamCaptures','fg_estimate_rates_v2'];
- const globalKeys=['fgt-jobs','fgt-current','fgt-rates','fanGuysProData_v6','lp_theme','lp_tips_off','lp_wizard_seen','fgt-theme','fgt-rates-reviewed-v2'];
+ const globalKeys=['fgt-jobs','fgt-current','fgt-rates','fanGuysProData_v6','lp_theme','lp_tips_off','lp_wizard_seen','fgt-theme','fgt-last-tool','fgt-rates-reviewed-v2'];
  // Set to '' when this isolated V2 package replaces the live app.
  const RELEASE_NAMESPACE='';
  const physical=window.localStorage;
