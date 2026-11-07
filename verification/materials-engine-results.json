@@ -1,5 +1,5 @@
 {
-  "passed": 7,
+  "passed": 8,
   "tests": [
     "EMT sticks convert to the correct footage",
     "By-foot materials keep footage units",
@@ -7,6 +7,7 @@
     "Manually selected nut quantity is retained",
     "Export excludes zero-quantity catalog and custom items",
     "Plain text retains ampersands; print HTML escapes markup",
+    "Print document title escapes a user-entered job name",
     "Materials PDF is a real, parseable PDF payload"
   ]
 }

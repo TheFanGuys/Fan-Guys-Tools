@@ -1,5 +1,5 @@
 {
-  "passed": 25,
+  "passed": 26,
   "tests": [
     "Fan placement triggers persistence without opening an edit sheet",
     "Undo/redo of fan placement restores counts and numbering",
@@ -25,6 +25,7 @@
     "Plan rotation includes junctions and preserves geometry",
     "Adding a second finger commits the active drag undo checkpoint",
     "Touch cancellation commits the drag and clears gesture state",
+    "Layout backup merge preserves existing plan names and imports separately",
     "Deleting a photo preserves bytes needed by Undo"
   ]
 }

@@ -36,7 +36,7 @@ Circuit Summary shows Planning only - not verified, rounding 125% of the *refere
 
 ## Offline updates
 
-Service-worker cache is `fanguys-field-live-3`. It registers relative to the folder. Settings -> Check for app updates asks the worker to update; close all app tabs and reopen to activate a waiting version. Test an airplane-mode cold open on your iPhone.
+Service-worker cache is `fanguys-field-live-4`. It registers relative to the folder. Home checks for updates when opened and announces when a new version is waiting; close all Tools tabs and reopen to activate it. Settings also has a manual update check. Test an airplane-mode cold open on your iPhone.
 
 ## Field navigation in this revision
 
@@ -54,7 +54,7 @@ Each project has separate Survey, Estimate, Materials, Layout plans, VFD capture
 
 For a low-risk migration, structured records continue to use browser localStorage behind a shared, job-scoped adapter. Layout photos remain in IndexedDB. This avoids converting every mature tool’s persistence engine at once. Storage is on your device, not GitHub. This release does not implement an IndexedDB-only record database.
 
-Settings → Full backup includes every project, retained legacy records, global rates, technical customizations, and all locally available Layout photos. Missing photo references are reported. API keys are excluded. Keep regular backup files outside the app.
+Settings → Full backup includes every project, retained legacy records, global rates, technical customizations, and all locally available Layout photos. A missing referenced Layout photo stops backup rather than producing an incomplete file. API keys are excluded. Keep regular backup files outside the app.
 
 Restore validates the version and record structure before writing. Matching records are replaced after confirmation; unrelated records remain. It does not create duplicate import copies. Export your current backup first. There is no cloud synchronization.
 

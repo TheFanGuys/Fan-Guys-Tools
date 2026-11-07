@@ -156,8 +156,9 @@
     }
   </style>
 <link rel="stylesheet" href="../shared/workspace.css">
+
 <script src="../shared/workspace.js" defer></script>
-</head>
+<link rel="stylesheet" href="../shared/rebrand.css"></head>
 <body>
 
 <div id="header">
@@ -175,19 +176,7 @@
 
 <div id="app">
 
-  <div class="section">
-    <label class="lbl" for="zip">Job Site Zip or City <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
-    <input type="text" id="zip" maxlength="60" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="85043 or Mesa, AZ" />
-    <div id="zip-feedback"></div>
-    <div id="zip-error"></div>
-  </div>
-
-  <div class="section">
-    <div class="lbl">Travel allowance tier <span id="tier-note" style="text-transform:none;letter-spacing:0;font-weight:400;color:#6b7280"></span></div>
-    <div class="tier-grid" id="tier-grid"></div><p class="sub-text">Editable planning allowances. City lookup does not fetch live hotel or rental prices.</p>
-    <button id="reset-auto">Reset to auto</button>
-  </div>
-
+  <div class="estimate-phase"><span>01 / SCOPE</span><strong>Fans & installation</strong><small>Build the mixed install first</small></div>
   <div class="section">
     <div class="lbl">Install Type <span style="text-transform:none;letter-spacing:0;font-weight:400">(tap a type, then add its fans below)</span></div>
     <div class="pill-group" id="install-pills">
@@ -207,6 +196,7 @@
     <div class="sub-text" id="mix-note" style="display:none"></div>
   </div>
 
+  <div class="estimate-phase"><span>02 / DIRECT COSTS</span><strong>Materials & extras</strong><small>Job-specific adjustments</small></div>
   <!-- Misc costs -->
   <div class="section">
     <div class="lbl">Miscellaneous Costs <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></div>
@@ -241,6 +231,20 @@
     <div class="sub-text" id="steel-desc">Mounting on I-beam — no angle iron needed</div>
     <div class="steel-alert" id="steel-alert">&#9888; Span over 10ft — 4 pieces of angle iron per fan</div>
     <div id="taz-note">&#9432; TAZ fans use chain &amp; hardware ($170/fan) — no steel applied</div>
+  </div>
+
+  <div class="estimate-phase"><span>03 / FIELD LOGISTICS</span><strong>Travel & crew</strong><small>Allowance inputs, not live prices</small></div>
+  <div class="section">
+    <label class="lbl" for="zip">Job Site Zip or City <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+    <input type="text" id="zip" maxlength="60" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="85043 or Mesa, AZ" />
+    <div id="zip-feedback"></div>
+    <div id="zip-error"></div>
+  </div>
+
+  <div class="section">
+    <div class="lbl">Travel allowance tier <span id="tier-note" style="text-transform:none;letter-spacing:0;font-weight:400;color:#6b7280"></span></div>
+    <div class="tier-grid" id="tier-grid"></div><p class="sub-text">Editable planning allowances. City lookup does not fetch live hotel or rental prices.</p>
+    <button id="reset-auto">Reset to auto</button>
   </div>
 
   <div class="section">

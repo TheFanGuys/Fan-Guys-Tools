@@ -179,8 +179,9 @@ textarea.inp{height:84px; padding:10px 12px; resize:vertical; line-height:1.35; 
 }
 </style>
 <link rel="stylesheet" href="../shared/workspace.css">
+
 <script src="../shared/workspace.js" defer></script>
-</head>
+<link rel="stylesheet" href="../shared/rebrand.css"></head>
 <body>
 <canvas id="cv" aria-label="Layout drawing canvas. Use Add to place objects; Move to select and drag."></canvas><div id="layoutSaveStatus" role="status">On this device</div><div id="layoutExportStatus" role="status"></div>
 
@@ -2621,8 +2622,19 @@ function collectPhotos(fans){
   const out={};
   return Promise.all([...ids].map(id=>idbGet(id).then(d=>{if(!d)throw new Error("Missing photo: "+id);out[id]=d;}))).then(()=>out);
 }
-function writePhotos(photos){const ids=Object.keys(photos||{});return Promise.all(ids.map(id=>idbPut(id,photos[id]))).then(()=>{});}
+function writePhotos(photos){const ids=Object.keys(photos||{});if(!ids.length)return Promise.resolve();return idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction("photos","readwrite"),store=tx.objectStore("photos");ids.forEach(id=>store.put(photos[id],id));tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||Error("Photo import stopped"));}));}
 function allFansInStore(store){const a=[];Object.keys(store.jobs||{}).forEach(k=>{(store.jobs[k].fans||[]).forEach(f=>a.push(f));});return a;}
+function mergeImportedPlans(current,incoming){
+  if(!incoming||!incoming.jobs||typeof incoming.jobs!=="object"||Array.isArray(incoming.jobs))throw Error("Invalid Layout backup");
+  const merged={current:current.current,jobs:Object.assign(Object.create(null),current.jobs||{})},names=[];
+  for(const [name,plan] of Object.entries(incoming.jobs)){
+    if(!plan||typeof plan!=="object"||!Array.isArray(plan.fans))throw Error("Invalid plan: "+name);
+    let unique=name||"Imported plan",i=2;while(Object.prototype.hasOwnProperty.call(merged.jobs,unique))unique=(name||"Imported plan")+" (import " +(i++)+")";
+    merged.jobs[unique]=Object.assign({},plan,{job:unique});names.push(unique);
+  }
+  if(!names.length)throw Error("No plans in Layout backup");
+  return {store:merged,names};
+}
 function shareJobFile(){
   saveAll();const job=snapshot();
   collectPhotos(job.fans||[]).then(photos=>{
@@ -2659,12 +2671,19 @@ function backupAll(){
 }
 document.getElementById("restoreInput").addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;const fr=new FileReader();
-  fr.onload=()=>{try{const incoming=JSON.parse(fr.result);if(!incoming.jobs)throw 0;
-    const cur=readStore();const merged={current:cur.current,jobs:Object.assign({},cur.jobs,incoming.jobs)};
-    writeStore(merged);
-    const done=()=>uiAlert("Restored "+Object.keys(incoming.jobs).length+" job(s). Open one from Jobs.");
-    if(incoming.photos)writePhotos(incoming.photos).then(done);else done();
-  }catch(err){uiAlert("That file isn't a valid backup.");}e.target.value="";};
+  fr.onload=async()=>{try{
+    const incoming=JSON.parse(fr.result),result=mergeImportedPlans(readStore(),incoming),photos=incoming.photos||{};
+    if(typeof photos!=="object"||Array.isArray(photos))throw Error("Invalid photo inventory");
+    const referenced=new Set();allFansInStore(incoming).forEach(f=>(f.photos||[]).forEach(p=>{if(p.id)referenced.add(p.id);}));
+    for(const id of referenced)if(!Object.prototype.hasOwnProperty.call(photos,id)&&!await idbGet(id))throw Error("Missing Layout photo: "+id);
+    const fresh={};for(const [id,data] of Object.entries(photos)){
+      if(typeof data!=="string"||!data.startsWith("data:image/"))throw Error("Invalid photo: "+id);
+      const old=await idbGet(id);if(old&&old!==data)throw Error("Photo ID conflict: "+id);if(!old)fresh[id]=data;
+    }
+    await writePhotos(fresh);
+    if(!writeStore(result.store)){await Promise.all(Object.keys(fresh).map(id=>idbDel(id)));throw Error("Storage full. Original plans retained.");}
+    uiAlert("Imported "+result.names.length+" plan(s) without replacing existing plans. Open Plans to select one.");
+  }catch(err){uiAlert("Layout restore stopped: "+err.message);}e.target.value="";};
   fr.readAsText(file);
 });
 

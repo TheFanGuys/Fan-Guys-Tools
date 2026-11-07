@@ -8,7 +8,7 @@ This version keeps static files on GitHub Pages, with no server, build step, acc
 - `shared/materials.css`: phone, tablet and desktop layouts, light and dark contrast, touch targets and category treatment.
 - `shared/workspace.js` and `shared/workspace.css`: three-step visual help inside Survey, Estimate, Layout, Materials and Tech Pro. The help is available from `?` in tool headers or Tools in Layout. Navigation from the previous revision remains.
 - `index.html` and `shared/home.css`: use the bundled Fan Guys Tools badge in desktop and mobile Home branding.
-- `sw.js`: cache version `fanguys-field-v2-8` and `shared/materials.css` in the offline pack.
+- `sw.js`: cache version `fanguys-field-v2-15` and `shared/materials.css` in the offline pack.
 
 No material names, item keys, saved-data format, storage namespace, layout geometry or engineering formulas were changed. V2 remains isolated with `RELEASE_NAMESPACE='v2:'` in `shared/store.js`.
 

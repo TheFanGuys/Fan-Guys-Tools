@@ -19,7 +19,7 @@
   if(!names[tool])return;
   document.body.dataset.tool=tool;FGTStore.setItem('fgt-last-tool',JSON.stringify(tool));let activeSurvey='job',activeEstimate=0;
   const head=make('header','workspace-header');
-  const back=make('a','workspace-back','‹');back.href=base.href;back.setAttribute('aria-label','Project dashboard');
+  const back=make('a','workspace-back','‹ Tools');back.href=base.href;back.setAttribute('aria-label','Tools dashboard');
   const title=make('div','workspace-title'),label=make('small',null,names[tool]),project=make('button','workspace-project');
   project.type='button';project.setAttribute('aria-label','Switch project');title.append(label,project);
   const status=make('span','workspace-status','On device');status.id='workspace-status';
@@ -46,6 +46,13 @@
    veil.hidden=false;document.body.classList.add('workspace-menu-open');close.focus();
   }
   project.onclick=()=>show('projects');
+  if(tool!=='layout'){
+   const rail=make('aside','workspace-rail');rail.setAttribute('aria-label','Tools workspace');
+   const brand=make('a','workspace-rail-brand');brand.href=base.href;const logo=make('img');logo.src=new URL('shared/mark.png',base).href;logo.alt='';logo.width=44;logo.height=44;brand.append(logo,make('span',null,'FAN GUYS'));rail.append(brand);
+   rail.append(make('div','workspace-rail-kicker','FIELD SYSTEMS'));
+   for(const [id,name] of tools){const a=make('a','workspace-rail-link');a.href=new URL(id+'/',base).href;a.append(make('span','workspace-rail-symbol',({survey:'01',estimate:'02',layout:'03',materials:'04',tech:'05'})[id]),make('span','workspace-rail-name',name));if(id===tool)a.setAttribute('aria-current','page');rail.append(a);}
+   const guide=make('button','workspace-rail-help','?  Field guide');guide.type='button';guide.onclick=()=>show('guide');rail.append(guide);document.body.append(rail);
+  }
   if(tool!=='layout'){const help=make('button','workspace-header-help','?');help.type='button';help.setAttribute('aria-label','How to use '+names[tool]);help.onclick=()=>show('guide');head.insertBefore(help,theme);}
   const nav=make('nav','workspace-nav');nav.setAttribute('aria-label','Field navigation');
   const home=make('a','workspace-nav-action','⌂ Project');home.href=base.href;
@@ -66,7 +73,7 @@
    function jump(i){activeEstimate=i;const target=document.getElementById(estimateSteps[i][2]);target?.closest('.section')?.scrollIntoView({behavior:'smooth',block:'start'});if(i===3)target?.scrollIntoView({behavior:'smooth',block:'center'});refresh();}
    function refresh(){[...steps.children].forEach((b,i)=>b.setAttribute('aria-current',i===activeEstimate?'step':'false'));next.textContent=activeEstimate===3?'Materials →':'Next section →';}
    next.onclick=()=>activeEstimate===3?location.assign(new URL('materials/',base).href):jump(activeEstimate+1);refresh();
-   const app=document.getElementById('app'),calc=document.getElementById('calc-btn');if(app&&calc){for(const id of ['install-pills','fan-grid','misc-list','breaker-qty','steel-pills','zip','tier-grid','crew-num','travel-pills','miles-input']){const section=document.getElementById(id)?.closest('.section');if(section)app.insertBefore(section,calc);}}
+   // Estimate sections are in workflow order in the document itself.
   }else{
    const nextTool={layout:'materials',materials:'tech',tech:'survey'}[tool];next.textContent=tool==='layout'?'Materials →':tool==='materials'?'Tech Pro →':'Survey →';next.onclick=()=>location.assign(new URL(nextTool+'/',base).href);
   }
